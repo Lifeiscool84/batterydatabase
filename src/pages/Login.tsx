@@ -21,6 +21,7 @@ const Login = () => {
         title: "Error",
         description: "Invalid credentials. Please try again.",
         variant: "destructive",
+        className: "bg-white/90 border border-red-200 text-red-900",
       });
     }
   };
