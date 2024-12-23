@@ -66,7 +66,7 @@ const Dashboard = () => {
 
             <Card 
               className="hover:shadow-lg transition-shadow cursor-pointer bg-white/80 backdrop-blur"
-              onClick={() => navigate('/shipping')}
+              onClick={() => navigate('/shipping-schedules')}
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -76,7 +76,7 @@ const Dashboard = () => {
                 <CardDescription>View vessel line plans and schedules</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">Track shipping schedules from major carriers</p>
+                <p className="text-sm text-gray-600">Track shipping schedules and manage notifications</p>
               </CardContent>
             </Card>
 

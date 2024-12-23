@@ -9,7 +9,134 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      ports: {
+        Row: {
+          code: string
+          country: string
+          created_at: string | null
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["port_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          country: string
+          created_at?: string | null
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["port_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          country?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["port_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      schedule_notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          vessel_schedule_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          vessel_schedule_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          vessel_schedule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_notifications_vessel_schedule_id_fkey"
+            columns: ["vessel_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "vessel_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vessel_schedules: {
+        Row: {
+          arrival_date: string
+          cargo_cutoff_date: string
+          carrier: Database["public"]["Enums"]["shipping_line"]
+          created_at: string | null
+          departure_date: string
+          destination_port_id: string | null
+          doc_cutoff_date: string
+          hazmat_cargo_cutoff_date: string
+          hazmat_doc_cutoff_date: string
+          id: string
+          origin_port_id: string | null
+          source: string
+          updated_at: string | null
+          vessel_name: string
+        }
+        Insert: {
+          arrival_date: string
+          cargo_cutoff_date: string
+          carrier: Database["public"]["Enums"]["shipping_line"]
+          created_at?: string | null
+          departure_date: string
+          destination_port_id?: string | null
+          doc_cutoff_date: string
+          hazmat_cargo_cutoff_date: string
+          hazmat_doc_cutoff_date: string
+          id?: string
+          origin_port_id?: string | null
+          source: string
+          updated_at?: string | null
+          vessel_name: string
+        }
+        Update: {
+          arrival_date?: string
+          cargo_cutoff_date?: string
+          carrier?: Database["public"]["Enums"]["shipping_line"]
+          created_at?: string | null
+          departure_date?: string
+          destination_port_id?: string | null
+          doc_cutoff_date?: string
+          hazmat_cargo_cutoff_date?: string
+          hazmat_doc_cutoff_date?: string
+          id?: string
+          origin_port_id?: string | null
+          source?: string
+          updated_at?: string | null
+          vessel_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vessel_schedules_destination_port_id_fkey"
+            columns: ["destination_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vessel_schedules_origin_port_id_fkey"
+            columns: ["origin_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +145,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      port_type: "ORIGIN" | "DESTINATION"
+      shipping_line: "ZIM" | "HMM"
     }
     CompositeTypes: {
       [_ in never]: never
