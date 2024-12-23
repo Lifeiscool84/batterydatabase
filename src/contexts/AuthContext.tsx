@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface User {
   id: string;
@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Check for existing session
@@ -37,13 +38,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    // Redirect to login if no user and not on login page
+    if (!isLoading && !user && location.pathname !== "/login") {
+      navigate("/login", { replace: true });
+    }
+    // Redirect to dashboard if user is on login page
+    if (!isLoading && user && location.pathname === "/login") {
+      navigate("/", { replace: true });
+    }
+  }, [user, isLoading, navigate, location]);
+
   const login = async (username: string, password: string) => {
     // For demo purposes - replace with actual authentication
     if (username === "admin" && password === "admin") {
       const user = { id: "1", username };
       setUser(user);
       localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard");
+      navigate("/");
     } else {
       throw new Error("Invalid credentials");
     }
