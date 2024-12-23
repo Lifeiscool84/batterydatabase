@@ -19,27 +19,8 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-
-type Port = {
-  id: string;
-  name: string;
-  code: string;
-};
-
-type VesselSchedule = {
-  id: string;
-  vessel_name: string;
-  carrier: "ZIM" | "HMM";
-  departure_date: string;
-  arrival_date: string;
-  doc_cutoff_date: string;
-  hazmat_doc_cutoff_date: string;
-  cargo_cutoff_date: string;
-  hazmat_cargo_cutoff_date: string;
-  source: string;
-  origin_port: Port;
-  destination_port: Port;
-};
+import { Port } from "@/types/port";
+import { VesselSchedule } from "@/types/vessel-schedule";
 
 const ShippingSchedules = () => {
   const { toast } = useToast();
