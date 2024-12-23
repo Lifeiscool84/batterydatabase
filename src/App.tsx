@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
+import ShippingSchedules from "@/pages/ShippingSchedules";
 
 const queryClient = new QueryClient();
 
@@ -20,10 +21,18 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route
-              path="/*"
+              path="/"
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/shipping-schedules"
+              element={
+                <ProtectedRoute>
+                  <ShippingSchedules />
                 </ProtectedRoute>
               }
             />
