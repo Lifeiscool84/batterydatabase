@@ -9,6 +9,7 @@ import { ScheduleFilters } from "@/components/shipping/ScheduleFilters";
 import { ScheduleList } from "@/components/shipping/ScheduleList";
 import { ScheduleDialog } from "@/components/shipping/ScheduleDialog";
 import { ScheduleHeader } from "@/components/shipping/ScheduleHeader";
+import { VesselLineCrawler } from "@/components/shipping/VesselLineCrawler";
 import { useSchedules } from "@/hooks/useSchedules";
 
 const ShippingSchedules = () => {
@@ -89,6 +90,8 @@ const ShippingSchedules = () => {
           onRefresh={handleRefresh}
           onAddSchedule={() => setIsDialogOpen(true)}
         />
+
+        <VesselLineCrawler />
 
         <ScheduleFilters
           originPorts={originPorts}
