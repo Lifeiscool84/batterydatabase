@@ -27,6 +27,19 @@ const ShippingSchedules = () => {
     queryKey: ["ports"],
     queryFn: async () => {
       console.log("Fetching ports...");
+      
+      // Check if we have an active session
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session) {
+        console.error("No active session found");
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Please log in to view ports"
+        });
+        throw new Error("No active session");
+      }
+
       const { data, error } = await supabase
         .from("ports")
         .select("*")
@@ -55,6 +68,8 @@ const ShippingSchedules = () => {
       console.log("Fetched ports:", data);
       return data as Port[];
     },
+    retry: 1,
+    retryDelay: 1000,
   });
 
   const {
