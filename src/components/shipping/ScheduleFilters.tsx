@@ -47,7 +47,7 @@ export const ScheduleFilters = ({
         <SelectTrigger className="bg-white">
           <SelectValue placeholder="Origin Port" />
         </SelectTrigger>
-        <SelectContent className="bg-white">
+        <SelectContent>
           {originPorts.map((port) => (
             <SelectItem key={port.id} value={port.id}>
               {port.name}
@@ -60,7 +60,7 @@ export const ScheduleFilters = ({
         <SelectTrigger className="bg-white">
           <SelectValue placeholder="Destination Port (Busan)" />
         </SelectTrigger>
-        <SelectContent className="bg-white">
+        <SelectContent>
           {destinationPorts
             .filter(port => port.name.toLowerCase().includes('busan') || port.name.toLowerCase().includes('pusan'))
             .map((port) => (
@@ -75,7 +75,7 @@ export const ScheduleFilters = ({
         <SelectTrigger className="bg-white">
           <SelectValue placeholder="Carrier" />
         </SelectTrigger>
-        <SelectContent className="bg-white">
+        <SelectContent>
           <SelectItem value="ZIM">ZIM</SelectItem>
           <SelectItem value="HMM">HMM</SelectItem>
         </SelectContent>
