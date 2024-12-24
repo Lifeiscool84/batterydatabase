@@ -1,34 +1,27 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, RefreshCw, AlertTriangle, Bell } from "lucide-react";
+import { RefreshCw, Bell, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Port } from "@/types/port";
 import { VesselSchedule } from "@/types/vessel-schedule";
+import { ScheduleFilters } from "@/components/shipping/ScheduleFilters";
+import { ScheduleCard } from "@/components/shipping/ScheduleCard";
+import { ScheduleDialog } from "@/components/shipping/ScheduleDialog";
 
 const ShippingSchedules = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedOriginPort, setSelectedOriginPort] = useState<string>("");
   const [selectedDestinationPort, setSelectedDestinationPort] = useState<string>("");
   const [selectedCarrier, setSelectedCarrier] = useState<string>("");
   const [dateRange, setDateRange] = useState<Date | undefined>(new Date());
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<VesselSchedule | undefined>();
 
   const { data: ports } = useQuery({
     queryKey: ["ports"],
@@ -82,11 +75,74 @@ const ShippingSchedules = () => {
     },
   });
 
-  useEffect(() => {
-    if (notifications) {
-      setUnreadNotifications(notifications.length);
-    }
-  }, [notifications]);
+  const createScheduleMutation = useMutation({
+    mutationFn: async (newSchedule: Partial<VesselSchedule>) => {
+      const { data, error } = await supabase
+        .from("vessel_schedules")
+        .insert([newSchedule])
+        .select();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vessel_schedules"] });
+      toast({ title: "Schedule created successfully" });
+      setIsDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error creating schedule",
+        description: error.message,
+      });
+    },
+  });
+
+  const updateScheduleMutation = useMutation({
+    mutationFn: async (schedule: Partial<VesselSchedule>) => {
+      const { data, error } = await supabase
+        .from("vessel_schedules")
+        .update(schedule)
+        .eq("id", schedule.id)
+        .select();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vessel_schedules"] });
+      toast({ title: "Schedule updated successfully" });
+      setIsDialogOpen(false);
+      setSelectedSchedule(undefined);
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error updating schedule",
+        description: error.message,
+      });
+    },
+  });
+
+  const deleteScheduleMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("vessel_schedules")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vessel_schedules"] });
+      toast({ title: "Schedule deleted successfully" });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error deleting schedule",
+        description: error.message,
+      });
+    },
+  });
 
   const handleRefresh = async () => {
     try {
@@ -101,6 +157,25 @@ const ShippingSchedules = () => {
         title: "Error refreshing schedules",
         description: "Please try again later",
       });
+    }
+  };
+
+  const handleScheduleSubmit = (data: Partial<VesselSchedule>) => {
+    if (selectedSchedule) {
+      updateScheduleMutation.mutate({ ...data, id: selectedSchedule.id });
+    } else {
+      createScheduleMutation.mutate(data);
+    }
+  };
+
+  const handleEditSchedule = (schedule: VesselSchedule) => {
+    setSelectedSchedule(schedule);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteSchedule = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this schedule?")) {
+      deleteScheduleMutation.mutate(id);
     }
   };
 
@@ -129,103 +204,37 @@ const ShippingSchedules = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Schedule
+            </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <Select value={selectedOriginPort} onValueChange={setSelectedOriginPort}>
-            <SelectTrigger>
-              <SelectValue placeholder="Origin Port" />
-            </SelectTrigger>
-            <SelectContent>
-              {originPorts.map((port) => (
-                <SelectItem key={port.id} value={port.id}>
-                  {port.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedDestinationPort} onValueChange={setSelectedDestinationPort}>
-            <SelectTrigger>
-              <SelectValue placeholder="Destination Port" />
-            </SelectTrigger>
-            <SelectContent>
-              {destinationPorts.map((port) => (
-                <SelectItem key={port.id} value={port.id}>
-                  {port.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedCarrier} onValueChange={setSelectedCarrier}>
-            <SelectTrigger>
-              <SelectValue placeholder="Carrier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ZIM">ZIM</SelectItem>
-              <SelectItem value="HMM">HMM</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange ? format(dateRange, "PPP") : "Pick a date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={dateRange}
-                onSelect={setDateRange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+        <ScheduleFilters
+          originPorts={originPorts}
+          destinationPorts={destinationPorts}
+          selectedOriginPort={selectedOriginPort}
+          selectedDestinationPort={selectedDestinationPort}
+          selectedCarrier={selectedCarrier}
+          dateRange={dateRange}
+          onOriginPortChange={setSelectedOriginPort}
+          onDestinationPortChange={setSelectedDestinationPort}
+          onCarrierChange={setSelectedCarrier}
+          onDateChange={setDateRange}
+        />
 
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow p-4">
             <h2 className="text-lg font-semibold mb-4">Vessel Line Schedules</h2>
             <ScrollArea className="h-[600px]">
               {schedules?.filter(s => s.source === "VESSEL_LINE").map((schedule) => (
-                <div key={schedule.id} className="border rounded p-4 mb-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium">{schedule.vessel_name}</h3>
-                    <span className="text-sm font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                      {schedule.carrier}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">Departure</p>
-                      <p>{format(new Date(schedule.departure_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Arrival</p>
-                      <p>{format(new Date(schedule.arrival_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Doc Cut-off</p>
-                      <p>{format(new Date(schedule.doc_cutoff_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Hazmat Doc Cut-off</p>
-                      <p>{format(new Date(schedule.hazmat_doc_cutoff_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Cargo Cut-off</p>
-                      <p>{format(new Date(schedule.cargo_cutoff_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Hazmat Cargo Cut-off</p>
-                      <p>{format(new Date(schedule.hazmat_cargo_cutoff_date), "PPp")}</p>
-                    </div>
-                  </div>
-                </div>
+                <ScheduleCard
+                  key={schedule.id}
+                  schedule={schedule}
+                  onEdit={handleEditSchedule}
+                  onDelete={handleDeleteSchedule}
+                />
               ))}
             </ScrollArea>
           </div>
@@ -234,44 +243,28 @@ const ShippingSchedules = () => {
             <h2 className="text-lg font-semibold mb-4">Port Schedules</h2>
             <ScrollArea className="h-[600px]">
               {schedules?.filter(s => s.source === "PORT").map((schedule) => (
-                <div key={schedule.id} className="border rounded p-4 mb-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium">{schedule.vessel_name}</h3>
-                    <span className="text-sm font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                      {schedule.carrier}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">Departure</p>
-                      <p>{format(new Date(schedule.departure_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Arrival</p>
-                      <p>{format(new Date(schedule.arrival_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Doc Cut-off</p>
-                      <p>{format(new Date(schedule.doc_cutoff_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Hazmat Doc Cut-off</p>
-                      <p>{format(new Date(schedule.hazmat_doc_cutoff_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Cargo Cut-off</p>
-                      <p>{format(new Date(schedule.cargo_cutoff_date), "PPp")}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Hazmat Cargo Cut-off</p>
-                      <p>{format(new Date(schedule.hazmat_cargo_cutoff_date), "PPp")}</p>
-                    </div>
-                  </div>
-                </div>
+                <ScheduleCard
+                  key={schedule.id}
+                  schedule={schedule}
+                  onEdit={handleEditSchedule}
+                  onDelete={handleDeleteSchedule}
+                />
               ))}
             </ScrollArea>
           </div>
         </div>
+
+        <ScheduleDialog
+          isOpen={isDialogOpen}
+          onClose={() => {
+            setIsDialogOpen(false);
+            setSelectedSchedule(undefined);
+          }}
+          onSubmit={handleScheduleSubmit}
+          schedule={selectedSchedule}
+          originPorts={originPorts}
+          destinationPorts={destinationPorts}
+        />
       </div>
     </div>
   );

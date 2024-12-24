@@ -14,13 +14,13 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-yellow-400">BatteryToKorea Database</h1>
+              <h1 className="text-xl font-semibold text-black">BatteryToKorea Database</h1>
             </div>
             <div className="flex items-center">
               <Button
                 variant="ghost"
                 onClick={logout}
-                className="text-yellow-400 hover:text-yellow-300"
+                className="text-black hover:text-gray-700"
               >
                 Sign Out
               </Button>
