@@ -41,6 +41,8 @@ export const ScheduleFilters = ({
   onCarrierChange,
   onDateChange,
 }: ScheduleFiltersProps) => {
+  console.log("Origin Ports in ScheduleFilters:", originPorts);
+  
   return (
     <div className="grid grid-cols-4 gap-4 mb-6">
       <Select value={selectedOriginPort} onValueChange={onOriginPortChange}>

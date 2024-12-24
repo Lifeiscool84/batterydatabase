@@ -4,9 +4,9 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Port } from "@/types/port";
-import { VesselSchedule, CreateVesselScheduleDTO } from "@/types/vessel-schedule";
+import { VesselSchedule } from "@/types/vessel-schedule";
 import { ScheduleFilters } from "@/components/shipping/ScheduleFilters";
-import { ScheduleList } from "@/components/shipping/ScheduleList";
+import { ScheduleTable } from "@/components/shipping/ScheduleTable";
 import { ScheduleDialog } from "@/components/shipping/ScheduleDialog";
 import { ScheduleHeader } from "@/components/shipping/ScheduleHeader";
 import { useSchedules } from "@/hooks/useSchedules";
@@ -22,13 +22,21 @@ const ShippingSchedules = () => {
   const [selectedSchedule, setSelectedSchedule] = useState<VesselSchedule | undefined>();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { data: ports } = useQuery({
+  // Fetch ports data
+  const { data: ports, isLoading: isLoadingPorts } = useQuery({
     queryKey: ["ports"],
     queryFn: async () => {
+      console.log("Fetching ports...");
       const { data, error } = await supabase
         .from("ports")
-        .select("*");
-      if (error) throw error;
+        .select("*")
+        .order('name');
+      
+      if (error) {
+        console.error("Error fetching ports:", error);
+        throw error;
+      }
+      console.log("Fetched ports:", data);
       return data as Port[];
     },
   });
@@ -45,14 +53,11 @@ const ShippingSchedules = () => {
     try {
       setIsRefreshing(true);
       
-      // Call the edge function to crawl schedules
       const { data, error } = await supabase.functions.invoke('crawl-vessel-schedule', {
         body: { automated: false }
       });
 
       if (error) throw error;
-
-      // Refetch schedules from the database
       await refetchSchedules();
       
       toast({
@@ -73,7 +78,7 @@ const ShippingSchedules = () => {
     }
   };
 
-  const handleScheduleSubmit = (data: CreateVesselScheduleDTO) => {
+  const handleScheduleSubmit = (data: any) => {
     if (selectedSchedule) {
       updateSchedule.mutate({ ...data, id: selectedSchedule.id });
       setIsDialogOpen(false);
@@ -95,8 +100,9 @@ const ShippingSchedules = () => {
     }
   };
 
-  const originPorts = ports?.filter(port => port.type === "ORIGIN") || [];
-  const destinationPorts = ports?.filter(port => port.type === "DESTINATION") || [];
+  // Filter ports by type
+  const originPorts = ports?.filter(port => port.type === 'ORIGIN') || [];
+  const destinationPorts = ports?.filter(port => port.type === 'DESTINATION') || [];
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -122,7 +128,7 @@ const ShippingSchedules = () => {
         />
 
         <div className="bg-white rounded-lg shadow p-4">
-          <ScheduleList
+          <ScheduleTable
             schedules={schedules || []}
             onEdit={handleEditSchedule}
             onDelete={handleDeleteSchedule}
