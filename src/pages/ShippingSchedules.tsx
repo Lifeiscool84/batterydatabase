@@ -4,12 +4,13 @@ import { format } from "date-fns";
 import { RefreshCw, Bell, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { BackButton } from "@/components/layout/BackButton";
 import { Port } from "@/types/port";
 import { VesselSchedule, CreateVesselScheduleDTO } from "@/types/vessel-schedule";
 import { ScheduleFilters } from "@/components/shipping/ScheduleFilters";
-import { ScheduleCard } from "@/components/shipping/ScheduleCard";
+import { ScheduleTable } from "@/components/shipping/ScheduleTable";
 import { ScheduleDialog } from "@/components/shipping/ScheduleDialog";
 
 const ShippingSchedules = () => {
@@ -186,7 +187,10 @@ const ShippingSchedules = () => {
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Shipping Schedules</h1>
+          <div className="flex items-center">
+            <BackButton />
+            <h1 className="text-2xl font-semibold">Shipping Schedules</h1>
+          </div>
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
@@ -224,35 +228,26 @@ const ShippingSchedules = () => {
           onDateChange={setDateRange}
         />
 
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold mb-4">Vessel Line Schedules</h2>
-            <ScrollArea className="h-[600px]">
-              {schedules?.filter(s => s.source === "VESSEL_LINE").map((schedule) => (
-                <ScheduleCard
-                  key={schedule.id}
-                  schedule={schedule}
-                  onEdit={handleEditSchedule}
-                  onDelete={handleDeleteSchedule}
-                />
-              ))}
-            </ScrollArea>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold mb-4">Port Schedules</h2>
-            <ScrollArea className="h-[600px]">
-              {schedules?.filter(s => s.source === "PORT").map((schedule) => (
-                <ScheduleCard
-                  key={schedule.id}
-                  schedule={schedule}
-                  onEdit={handleEditSchedule}
-                  onDelete={handleDeleteSchedule}
-                />
-              ))}
-            </ScrollArea>
-          </div>
-        </div>
+        <Tabs defaultValue="vessel" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="vessel">Vessel Line Schedules</TabsTrigger>
+            <TabsTrigger value="port">Port Schedules</TabsTrigger>
+          </TabsList>
+          <TabsContent value="vessel" className="bg-white rounded-lg shadow p-4">
+            <ScheduleTable
+              schedules={schedules?.filter(s => s.source === "VESSEL_LINE") || []}
+              onEdit={handleEditSchedule}
+              onDelete={handleDeleteSchedule}
+            />
+          </TabsContent>
+          <TabsContent value="port" className="bg-white rounded-lg shadow p-4">
+            <ScheduleTable
+              schedules={schedules?.filter(s => s.source === "PORT") || []}
+              onEdit={handleEditSchedule}
+              onDelete={handleDeleteSchedule}
+            />
+          </TabsContent>
+        </Tabs>
 
         <ScheduleDialog
           isOpen={isDialogOpen}

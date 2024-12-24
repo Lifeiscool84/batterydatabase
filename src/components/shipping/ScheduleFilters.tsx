@@ -44,10 +44,10 @@ export const ScheduleFilters = ({
   return (
     <div className="grid grid-cols-4 gap-4 mb-6">
       <Select value={selectedOriginPort} onValueChange={onOriginPortChange}>
-        <SelectTrigger>
+        <SelectTrigger className="bg-white">
           <SelectValue placeholder="Origin Port" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white">
           {originPorts.map((port) => (
             <SelectItem key={port.id} value={port.id}>
               {port.name}
@@ -57,10 +57,10 @@ export const ScheduleFilters = ({
       </Select>
 
       <Select value={selectedDestinationPort} onValueChange={onDestinationPortChange}>
-        <SelectTrigger>
+        <SelectTrigger className="bg-white">
           <SelectValue placeholder="Destination Port (Busan)" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white">
           {destinationPorts
             .filter(port => port.name.toLowerCase().includes('busan') || port.name.toLowerCase().includes('pusan'))
             .map((port) => (
@@ -72,10 +72,10 @@ export const ScheduleFilters = ({
       </Select>
 
       <Select value={selectedCarrier} onValueChange={onCarrierChange}>
-        <SelectTrigger>
+        <SelectTrigger className="bg-white">
           <SelectValue placeholder="Carrier" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white">
           <SelectItem value="ZIM">ZIM</SelectItem>
           <SelectItem value="HMM">HMM</SelectItem>
         </SelectContent>
@@ -83,12 +83,12 @@ export const ScheduleFilters = ({
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-start text-left font-normal">
+          <Button variant="outline" className="w-full justify-start text-left font-normal bg-white">
             <CalendarIcon className="mr-2 h-4 w-4" />
             {dateRange ? format(dateRange, "PPP") : "Pick a date"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
+        <PopoverContent className="w-auto p-0 bg-white">
           <Calendar
             mode="single"
             selected={dateRange}
