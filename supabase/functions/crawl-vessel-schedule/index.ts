@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import puppeteer from 'https://deno.land/x/puppeteer@16.2.0/mod.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -8,63 +7,88 @@ const corsHeaders = {
 }
 
 async function crawlZimSchedules() {
-  const browser = await puppeteer.launch()
-  const page = await browser.newPage()
+  console.log('Starting ZIM schedule crawl')
   
   try {
-    console.log('Starting ZIM schedule crawl')
-    
-    // Navigate to ZIM schedules page
-    await page.goto('https://zimchina.com/schedules/schedule-by-port')
-    
-    // Select USA in country dropdown
-    await page.select('#country-select', 'USA')
-    await page.waitForTimeout(1000) // Wait for port options to load
-    
-    // Select Houston port
-    await page.select('#port-select', 'Houston (TX)')
-    
-    // Set start date to today
-    const today = new Date().toISOString().split('T')[0]
-    await page.$eval('#start-date', (el, value) => el.value = value, today)
-    
-    // Set weeks ahead to 12
-    await page.select('#weeks-ahead', '12')
-    
-    // Click search button
-    await page.click('#search-button')
-    await page.waitForSelector('.schedule-results')
-    
-    // Extract schedule data
-    const schedules = await page.evaluate(() => {
-      const rows = document.querySelectorAll('.schedule-row')
-      return Array.from(rows).map(row => {
-        const vesselName = row.querySelector('.vessel-name').textContent
-        // Only include vessels starting with "ZIM"
-        if (!vesselName.startsWith('ZIM')) return null
-        
-        return {
-          vessel_name: vesselName,
-          carrier: 'ZIM',
-          departure_date: row.querySelector('.departure-date').textContent,
-          arrival_date: row.querySelector('.arrival-date').textContent,
-          doc_cutoff_date: row.querySelector('.doc-cutoff').textContent,
-          hazmat_doc_cutoff_date: row.querySelector('.hazmat-doc-cutoff').textContent,
-          cargo_cutoff_date: row.querySelector('.cargo-cutoff').textContent,
-          hazmat_cargo_cutoff_date: row.querySelector('.hazmat-cargo-cutoff').textContent,
-          source: 'https://zimchina.com/schedules/schedule-by-port'
-        }
-      }).filter(schedule => schedule !== null)
-    })
-    
-    console.log(`Found ${schedules.length} ZIM schedules`)
-    return schedules
+    // Use browserless.io API (they have a generous free tier)
+    const response = await fetch('https://chrome.browserless.io/content', {
+      method: 'POST',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Deno.env.get('BROWSERLESS_API_KEY')}`
+      },
+      body: JSON.stringify({
+        url: 'https://www.zim.com/schedules/schedule-by-port',
+        gotoOptions: {
+          waitUntil: 'networkidle0',
+          timeout: 30000
+        },
+        evaluate: `async () => {
+          // Wait for form elements
+          await new Promise(r => setTimeout(r, 2000));
+          
+          // Select USA
+          const countrySelect = document.querySelector('#country-select');
+          countrySelect.value = 'USA';
+          countrySelect.dispatchEvent(new Event('change'));
+          
+          // Wait for ports to load
+          await new Promise(r => setTimeout(r, 1000));
+          
+          // Select Houston
+          const portSelect = document.querySelector('#port-select');
+          portSelect.value = 'Houston (TX)';
+          
+          // Set date range
+          const startDate = document.querySelector('#start-date');
+          startDate.value = new Date().toISOString().split('T')[0];
+          
+          // Set weeks ahead
+          const weeksSelect = document.querySelector('#weeks-ahead');
+          weeksSelect.value = '12';
+          
+          // Click search
+          document.querySelector('#search-button').click();
+          
+          // Wait for results
+          await new Promise(r => setTimeout(r, 3000));
+          
+          // Extract schedule data
+          const schedules = [];
+          document.querySelectorAll('.schedule-row').forEach(row => {
+            const vesselName = row.querySelector('.vessel-name').textContent;
+            if (vesselName.startsWith('ZIM')) {
+              schedules.push({
+                vessel_name: vesselName,
+                carrier: 'ZIM',
+                departure_date: row.querySelector('.departure-date').textContent,
+                arrival_date: row.querySelector('.arrival-date').textContent,
+                doc_cutoff_date: row.querySelector('.doc-cutoff').textContent,
+                hazmat_doc_cutoff_date: row.querySelector('.hazmat-doc-cutoff').textContent,
+                cargo_cutoff_date: row.querySelector('.cargo-cutoff').textContent,
+                hazmat_cargo_cutoff_date: row.querySelector('.hazmat-cargo-cutoff').textContent,
+                source: 'https://www.zim.com/schedules/schedule-by-port'
+              });
+            }
+          });
+          
+          return schedules;
+        }`
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const schedules = await response.json();
+    console.log(`Found ${schedules.length} ZIM schedules`);
+    return schedules;
     
   } catch (error) {
-    console.error('Error crawling ZIM schedules:', error)
-    throw error
-  } finally {
-    await browser.close()
+    console.error('Error crawling ZIM schedules:', error);
+    throw error;
   }
 }
 
