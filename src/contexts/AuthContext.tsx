@@ -1,15 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-
-interface User {
-  id: string;
-  username: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  session: Session | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -29,53 +27,66 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Check for existing session
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    // Redirect to login if no user and not on login page
-    if (!isLoading && !user && location.pathname !== "/login") {
-      navigate("/login", { replace: true });
-    }
-    // Redirect to dashboard if user is on login page
-    if (!isLoading && user && location.pathname === "/login") {
-      navigate("/", { replace: true });
+    if (!isLoading) {
+      if (!user && location.pathname !== "/login") {
+        navigate("/login", { replace: true });
+      } else if (user && location.pathname === "/login") {
+        navigate("/", { replace: true });
+      }
     }
   }, [user, isLoading, navigate, location]);
 
-  const login = async (username: string, password: string) => {
-    // For demo purposes - replace with actual authentication
-    if (username === "admin" && password === "admin") {
-      const user = { id: "1", username };
-      setUser(user);
-      localStorage.setItem("user", JSON.stringify(user));
-      navigate("/");
-    } else {
-      throw new Error("Invalid credentials");
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) {
+      throw error;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw error;
+    }
     navigate("/login");
   };
 
   const value = {
     user,
+    session,
     login,
     logout,
-    isLoading
+    isLoading,
   };
 
   return (

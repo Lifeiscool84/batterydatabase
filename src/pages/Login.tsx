@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const { toast } = useToast();
@@ -11,7 +11,7 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(username, password);
+      await login(email, password);
       toast({
         title: "Welcome to BatteryToKorea Database",
         description: "Successfully logged in.",
@@ -19,7 +19,7 @@ const Login = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Invalid credentials. Please try again.",
+        description: error instanceof Error ? error.message : "Invalid credentials. Please try again.",
         variant: "destructive",
         className: "bg-white/90 border border-red-200 text-red-900",
       });
@@ -41,16 +41,16 @@ const Login = () => {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium text-[#FFD700]">
-              Username
+            <label htmlFor="email" className="text-sm font-medium text-[#FFD700]">
+              Email
             </label>
             <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 bg-white/5 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-transparent text-white"
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               required
             />
           </div>
