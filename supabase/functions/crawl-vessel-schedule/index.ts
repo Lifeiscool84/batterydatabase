@@ -1,10 +1,72 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import FirecrawlApp from 'npm:@mendable/firecrawl-js'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import puppeteer from 'https://deno.land/x/puppeteer@16.2.0/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+async function crawlZimSchedules() {
+  const browser = await puppeteer.launch()
+  const page = await browser.newPage()
+  
+  try {
+    console.log('Starting ZIM schedule crawl')
+    
+    // Navigate to ZIM schedules page
+    await page.goto('https://zimchina.com/schedules/schedule-by-port')
+    
+    // Select USA in country dropdown
+    await page.select('#country-select', 'USA')
+    await page.waitForTimeout(1000) // Wait for port options to load
+    
+    // Select Houston port
+    await page.select('#port-select', 'Houston (TX)')
+    
+    // Set start date to today
+    const today = new Date().toISOString().split('T')[0]
+    await page.$eval('#start-date', (el, value) => el.value = value, today)
+    
+    // Set weeks ahead to 12
+    await page.select('#weeks-ahead', '12')
+    
+    // Click search button
+    await page.click('#search-button')
+    await page.waitForSelector('.schedule-results')
+    
+    // Extract schedule data
+    const schedules = await page.evaluate(() => {
+      const rows = document.querySelectorAll('.schedule-row')
+      return Array.from(rows).map(row => {
+        const vesselName = row.querySelector('.vessel-name').textContent
+        // Only include vessels starting with "ZIM"
+        if (!vesselName.startsWith('ZIM')) return null
+        
+        return {
+          vessel_name: vesselName,
+          carrier: 'ZIM',
+          departure_date: row.querySelector('.departure-date').textContent,
+          arrival_date: row.querySelector('.arrival-date').textContent,
+          doc_cutoff_date: row.querySelector('.doc-cutoff').textContent,
+          hazmat_doc_cutoff_date: row.querySelector('.hazmat-doc-cutoff').textContent,
+          cargo_cutoff_date: row.querySelector('.cargo-cutoff').textContent,
+          hazmat_cargo_cutoff_date: row.querySelector('.hazmat-cargo-cutoff').textContent,
+          source: 'https://zimchina.com/schedules/schedule-by-port'
+        }
+      }).filter(schedule => schedule !== null)
+    })
+    
+    console.log(`Found ${schedules.length} ZIM schedules`)
+    return schedules
+    
+  } catch (error) {
+    console.error('Error crawling ZIM schedules:', error)
+    throw error
+  } finally {
+    await browser.close()
+  }
 }
 
 serve(async (req) => {
@@ -14,50 +76,28 @@ serve(async (req) => {
   }
 
   try {
-    const { url, carrier } = await req.json()
-    console.log(`Starting crawl for ${carrier} at URL: ${url}`)
-
-    const firecrawl = new FirecrawlApp({ 
-      apiKey: Deno.env.get('FIRECRAWL_API_KEY') 
-    })
-
-    const crawlResponse = await firecrawl.crawlUrl(url, {
-      limit: 100,
-      scrapeOptions: {
-        formats: ['markdown', 'html'],
-      }
-    })
-
-    if (!crawlResponse.success) {
-      console.error('Crawl failed:', crawlResponse.error)
-      return new Response(
-        JSON.stringify({ success: false, error: crawlResponse.error }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    const { automated } = await req.json()
+    console.log(`Starting ${automated ? 'automated' : 'manual'} crawl`)
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Process and store the crawled data
-    const scheduleData = crawlResponse.data.map(item => ({
-      vessel_name: item.title || 'Unknown Vessel',
-      carrier: carrier,
-      departure_date: new Date().toISOString(), // You'll need to extract this from the crawled data
-      arrival_date: new Date().toISOString(), // You'll need to extract this from the crawled data
-      doc_cutoff_date: new Date().toISOString(),
-      hazmat_doc_cutoff_date: new Date().toISOString(),
-      cargo_cutoff_date: new Date().toISOString(),
-      hazmat_cargo_cutoff_date: new Date().toISOString(),
-      source: url
-    }))
+    // Crawl ZIM schedules
+    const schedules = await crawlZimSchedules()
 
-    // Insert the processed data into the vessel_schedules table
+    // Store schedules in database
     const { data, error } = await supabase
       .from('vessel_schedules')
-      .insert(scheduleData)
+      .upsert(
+        schedules.map(schedule => ({
+          ...schedule,
+          // Use vessel_name and departure_date as unique identifier
+          id: `${schedule.vessel_name}-${schedule.departure_date}`
+        })),
+        { onConflict: 'id' }
+      )
 
     if (error) {
       console.error('Error storing schedules:', error)
@@ -67,12 +107,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        status: crawlResponse.status,
-        completed: crawlResponse.completed,
-        total: crawlResponse.total,
-        creditsUsed: crawlResponse.creditsUsed,
-        expiresAt: crawlResponse.expiresAt,
-        data: scheduleData
+        message: `Successfully crawled and stored ${schedules.length} schedules`,
+        data: schedules
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

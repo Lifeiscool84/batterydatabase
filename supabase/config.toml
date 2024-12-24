@@ -28,3 +28,4 @@ enabled = true
 [[functions]]
 name = "crawl-vessel-schedule"
 verify_jwt = true
+import_map = "./import_map.json"
