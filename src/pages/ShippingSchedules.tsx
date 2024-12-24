@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Port } from "@/types/port";
-import { VesselSchedule } from "@/types/vessel-schedule";
+import { VesselSchedule, CreateVesselScheduleDTO } from "@/types/vessel-schedule";
 import { ScheduleFilters } from "@/components/shipping/ScheduleFilters";
 import { ScheduleCard } from "@/components/shipping/ScheduleCard";
 import { ScheduleDialog } from "@/components/shipping/ScheduleDialog";
@@ -76,7 +76,7 @@ const ShippingSchedules = () => {
   });
 
   const createScheduleMutation = useMutation({
-    mutationFn: async (newSchedule: Partial<VesselSchedule>) => {
+    mutationFn: async (newSchedule: CreateVesselScheduleDTO) => {
       const { data, error } = await supabase
         .from("vessel_schedules")
         .insert([newSchedule])
@@ -99,7 +99,7 @@ const ShippingSchedules = () => {
   });
 
   const updateScheduleMutation = useMutation({
-    mutationFn: async (schedule: Partial<VesselSchedule>) => {
+    mutationFn: async (schedule: CreateVesselScheduleDTO & { id: string }) => {
       const { data, error } = await supabase
         .from("vessel_schedules")
         .update(schedule)
@@ -160,7 +160,7 @@ const ShippingSchedules = () => {
     }
   };
 
-  const handleScheduleSubmit = (data: Partial<VesselSchedule>) => {
+  const handleScheduleSubmit = (data: CreateVesselScheduleDTO) => {
     if (selectedSchedule) {
       updateScheduleMutation.mutate({ ...data, id: selectedSchedule.id });
     } else {

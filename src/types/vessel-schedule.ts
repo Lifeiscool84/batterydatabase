@@ -1,10 +1,11 @@
 import { Database } from "@/integrations/supabase/types";
-import { Port } from "./port";
 
 export type VesselSchedule = {
   id: string;
   vessel_name: string;
   carrier: Database["public"]["Enums"]["shipping_line"];
+  origin_port_id?: string;
+  destination_port_id?: string;
   departure_date: string;
   arrival_date: string;
   doc_cutoff_date: string;
@@ -12,6 +13,23 @@ export type VesselSchedule = {
   cargo_cutoff_date: string;
   hazmat_cargo_cutoff_date: string;
   source: string;
-  origin_port: Port;
-  destination_port: Port;
+  created_at?: string;
+  updated_at?: string;
+  // Joined relations
+  origin_port?: {
+    id: string;
+    name: string;
+    code: string;
+    country: string;
+    type: Database["public"]["Enums"]["port_type"];
+  };
+  destination_port?: {
+    id: string;
+    name: string;
+    code: string;
+    country: string;
+    type: Database["public"]["Enums"]["port_type"];
+  };
 };
+
+export type CreateVesselScheduleDTO = Omit<VesselSchedule, 'id' | 'created_at' | 'updated_at' | 'origin_port' | 'destination_port'>;

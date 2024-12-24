@@ -17,13 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { VesselSchedule } from "@/types/vessel-schedule";
+import { VesselSchedule, CreateVesselScheduleDTO } from "@/types/vessel-schedule";
 import { Port } from "@/types/port";
 
 interface ScheduleDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Partial<VesselSchedule>) => void;
+  onSubmit: (data: CreateVesselScheduleDTO) => void;
   schedule?: VesselSchedule;
   originPorts: Port[];
   destinationPorts: Port[];
@@ -37,8 +37,20 @@ export const ScheduleDialog = ({
   originPorts,
   destinationPorts,
 }: ScheduleDialogProps) => {
-  const { register, handleSubmit, setValue } = useForm<Partial<VesselSchedule>>({
-    defaultValues: schedule || {
+  const { register, handleSubmit, setValue } = useForm<CreateVesselScheduleDTO>({
+    defaultValues: schedule ? {
+      vessel_name: schedule.vessel_name,
+      carrier: schedule.carrier,
+      origin_port_id: schedule.origin_port_id,
+      destination_port_id: schedule.destination_port_id,
+      departure_date: schedule.departure_date,
+      arrival_date: schedule.arrival_date,
+      doc_cutoff_date: schedule.doc_cutoff_date,
+      hazmat_doc_cutoff_date: schedule.hazmat_doc_cutoff_date,
+      cargo_cutoff_date: schedule.cargo_cutoff_date,
+      hazmat_cargo_cutoff_date: schedule.hazmat_cargo_cutoff_date,
+      source: schedule.source || "MANUAL",
+    } : {
       source: "MANUAL",
     },
   });
