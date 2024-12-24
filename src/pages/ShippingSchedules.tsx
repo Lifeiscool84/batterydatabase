@@ -45,7 +45,7 @@ const ShippingSchedules = () => {
       if (!data || data.length === 0) {
         console.warn("No ports found in the database");
         toast({
-          variant: "warning",
+          variant: "default",
           title: "No ports available",
           description: "Please ensure ports are added to the database"
         });
