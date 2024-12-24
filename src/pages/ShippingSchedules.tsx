@@ -58,6 +58,7 @@ const ShippingSchedules = () => {
       toast({
         title: "Schedules refreshed",
         description: `Last updated: ${format(new Date(), "PPpp")}`,
+        duration: 2000,
       });
     } catch (error) {
       console.error('Error refreshing schedules:', error);
@@ -65,6 +66,7 @@ const ShippingSchedules = () => {
         variant: "destructive",
         title: "Error refreshing schedules",
         description: "Please try again later",
+        duration: 2000,
       });
     } finally {
       setIsRefreshing(false);
@@ -103,6 +105,7 @@ const ShippingSchedules = () => {
           unreadNotifications={unreadNotifications}
           onRefresh={handleRefresh}
           onAddSchedule={() => setIsDialogOpen(true)}
+          isRefreshing={isRefreshing}
         />
 
         <ScheduleFilters

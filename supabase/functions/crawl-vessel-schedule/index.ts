@@ -6,11 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function crawlZimSchedules() {
-  console.log('Starting ZIM schedule crawl')
-  
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
   try {
-    // Use browserless.io API (they have a generous free tier)
+    console.log('Starting ZIM schedule crawl')
+    
+    // Use browserless.io API
     const response = await fetch('https://chrome.browserless.io/content', {
       method: 'POST',
       headers: {
@@ -84,47 +89,29 @@ async function crawlZimSchedules() {
 
     const schedules = await response.json();
     console.log(`Found ${schedules.length} ZIM schedules`);
-    return schedules;
-    
-  } catch (error) {
-    console.error('Error crawling ZIM schedules:', error);
-    throw error;
-  }
-}
-
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
-  try {
-    const { automated } = await req.json()
-    console.log(`Starting ${automated ? 'automated' : 'manual'} crawl`)
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Crawl ZIM schedules
-    const schedules = await crawlZimSchedules()
-
     // Store schedules in database
-    const { data, error } = await supabase
-      .from('vessel_schedules')
-      .upsert(
-        schedules.map(schedule => ({
-          ...schedule,
-          // Use vessel_name and departure_date as unique identifier
-          id: `${schedule.vessel_name}-${schedule.departure_date}`
-        })),
-        { onConflict: 'id' }
-      )
+    if (schedules.length > 0) {
+      const { data, error } = await supabase
+        .from('vessel_schedules')
+        .upsert(
+          schedules.map(schedule => ({
+            ...schedule,
+            // Use vessel_name and departure_date as unique identifier
+            id: `${schedule.vessel_name}-${schedule.departure_date}`
+          })),
+          { onConflict: 'id' }
+        )
 
-    if (error) {
-      console.error('Error storing schedules:', error)
-      throw error
+      if (error) {
+        console.error('Error storing schedules:', error)
+        throw error
+      }
     }
 
     return new Response(
