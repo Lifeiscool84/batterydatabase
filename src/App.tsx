@@ -19,7 +19,10 @@ const App = () => (
           <Toaster />
           <Sonner />
           <Routes>
+            {/* Public route - accessible without authentication */}
             <Route path="/login" element={<Login />} />
+            
+            {/* Protected routes - require authentication */}
             <Route
               path="/"
               element={
@@ -36,6 +39,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            
             {/* Catch all route - redirect to dashboard */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
