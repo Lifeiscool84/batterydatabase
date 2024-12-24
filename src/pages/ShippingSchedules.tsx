@@ -22,8 +22,8 @@ const ShippingSchedules = () => {
   const [selectedSchedule, setSelectedSchedule] = useState<VesselSchedule | undefined>();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch ports data
-  const { data: ports, isLoading: isLoadingPorts } = useQuery({
+  // Fetch ports data with enhanced error handling
+  const { data: ports, isLoading: isLoadingPorts, error: portsError } = useQuery({
     queryKey: ["ports"],
     queryFn: async () => {
       console.log("Fetching ports...");
@@ -34,8 +34,24 @@ const ShippingSchedules = () => {
       
       if (error) {
         console.error("Error fetching ports:", error);
+        toast({
+          variant: "destructive",
+          title: "Error fetching ports",
+          description: error.message
+        });
         throw error;
       }
+
+      if (!data || data.length === 0) {
+        console.warn("No ports found in the database");
+        toast({
+          variant: "warning",
+          title: "No ports available",
+          description: "Please ensure ports are added to the database"
+        });
+        return [];
+      }
+
       console.log("Fetched ports:", data);
       return data as Port[];
     },
@@ -100,9 +116,19 @@ const ShippingSchedules = () => {
     }
   };
 
-  // Filter ports by type
-  const originPorts = ports?.filter(port => port.type === 'ORIGIN') || [];
+  // Filter ports by type with additional logging
+  const originPorts = ports?.filter(port => {
+    console.log("Filtering port:", port);
+    return port.type === 'ORIGIN';
+  }) || [];
   const destinationPorts = ports?.filter(port => port.type === 'DESTINATION') || [];
+
+  console.log("Final originPorts:", originPorts);
+  console.log("Final destinationPorts:", destinationPorts);
+
+  if (portsError) {
+    console.error("Ports error:", portsError);
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
