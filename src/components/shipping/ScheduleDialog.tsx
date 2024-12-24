@@ -42,8 +42,8 @@ export const ScheduleDialog = ({
     defaultValues: schedule ? {
       vessel_name: schedule.vessel_name,
       carrier: schedule.carrier,
-      origin_port_id: schedule.origin_port_id,
-      destination_port_id: schedule.destination_port_id,
+      origin_port_id: schedule.origin_port?.id,
+      destination_port_id: schedule.destination_port?.id,
       departure_date: schedule.departure_date,
       arrival_date: schedule.arrival_date,
       doc_cutoff_date: schedule.doc_cutoff_date,
@@ -58,7 +58,7 @@ export const ScheduleDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] bg-white">
         <DialogHeader>
           <DialogTitle>{schedule ? "Edit Schedule" : "Add New Schedule"}</DialogTitle>
         </DialogHeader>
@@ -67,7 +67,7 @@ export const ScheduleDialog = ({
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="vessel_name">Vessel Name</Label>
-                <Input id="vessel_name" {...register("vessel_name")} />
+                <Input id="vessel_name" {...register("vessel_name")} className="bg-white" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="carrier">Carrier</Label>
@@ -88,7 +88,7 @@ export const ScheduleDialog = ({
                 <Label htmlFor="origin_port_id">Origin Port</Label>
                 <Select
                   onValueChange={(value) => setValue("origin_port_id", value)}
-                  defaultValue={schedule?.origin_port_id}
+                  defaultValue={schedule?.origin_port?.id}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select origin port" />
@@ -106,17 +106,19 @@ export const ScheduleDialog = ({
                 <Label htmlFor="destination_port_id">Destination Port</Label>
                 <Select
                   onValueChange={(value) => setValue("destination_port_id", value)}
-                  defaultValue={schedule?.destination_port_id}
+                  defaultValue={schedule?.destination_port?.id}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select destination port" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
-                    {destinationPorts.map((port) => (
-                      <SelectItem key={port.id} value={port.id}>
-                        {port.name}
-                      </SelectItem>
-                    ))}
+                    {destinationPorts
+                      .filter(port => port.name.toLowerCase().includes('busan') || port.name.toLowerCase().includes('pusan'))
+                      .map((port) => (
+                        <SelectItem key={port.id} value={port.id}>
+                          {port.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -127,6 +129,7 @@ export const ScheduleDialog = ({
                   type="datetime-local"
                   {...register("departure_date")}
                   defaultValue={schedule?.departure_date ? format(new Date(schedule.departure_date), "yyyy-MM-dd'T'HH:mm") : undefined}
+                  className="bg-white"
                 />
               </div>
               <div className="grid gap-2">
@@ -136,6 +139,7 @@ export const ScheduleDialog = ({
                   type="datetime-local"
                   {...register("arrival_date")}
                   defaultValue={schedule?.arrival_date ? format(new Date(schedule.arrival_date), "yyyy-MM-dd'T'HH:mm") : undefined}
+                  className="bg-white"
                 />
               </div>
               <div className="grid gap-2">
@@ -145,6 +149,7 @@ export const ScheduleDialog = ({
                   type="datetime-local"
                   {...register("doc_cutoff_date")}
                   defaultValue={schedule?.doc_cutoff_date ? format(new Date(schedule.doc_cutoff_date), "yyyy-MM-dd'T'HH:mm") : undefined}
+                  className="bg-white"
                 />
               </div>
               <div className="grid gap-2">
@@ -154,6 +159,7 @@ export const ScheduleDialog = ({
                   type="datetime-local"
                   {...register("hazmat_doc_cutoff_date")}
                   defaultValue={schedule?.hazmat_doc_cutoff_date ? format(new Date(schedule.hazmat_doc_cutoff_date), "yyyy-MM-dd'T'HH:mm") : undefined}
+                  className="bg-white"
                 />
               </div>
               <div className="grid gap-2">
@@ -163,6 +169,7 @@ export const ScheduleDialog = ({
                   type="datetime-local"
                   {...register("cargo_cutoff_date")}
                   defaultValue={schedule?.cargo_cutoff_date ? format(new Date(schedule.cargo_cutoff_date), "yyyy-MM-dd'T'HH:mm") : undefined}
+                  className="bg-white"
                 />
               </div>
               <div className="grid gap-2">
@@ -172,6 +179,7 @@ export const ScheduleDialog = ({
                   type="datetime-local"
                   {...register("hazmat_cargo_cutoff_date")}
                   defaultValue={schedule?.hazmat_cargo_cutoff_date ? format(new Date(schedule.hazmat_cargo_cutoff_date), "yyyy-MM-dd'T'HH:mm") : undefined}
+                  className="bg-white"
                 />
               </div>
             </div>
