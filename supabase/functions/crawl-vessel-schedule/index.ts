@@ -13,73 +13,21 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting ZIM schedule crawl')
+    console.log('Starting ZIM schedule crawl using browse.ai')
     
-    // Use browserless.io API
-    const response = await fetch('https://chrome.browserless.io/content', {
+    // Use browse.ai API to fetch schedules
+    const response = await fetch('https://api.browse.ai/v2/robots/default/tasks', {
       method: 'POST',
       headers: {
-        'Cache-Control': 'no-cache',
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${Deno.env.get('BROWSERLESS_API_KEY')}`
+        'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        url: 'https://www.zim.com/schedules/schedule-by-port',
-        gotoOptions: {
-          waitUntil: 'networkidle0',
-          timeout: 30000
-        },
-        evaluate: `async () => {
-          // Wait for form elements
-          await new Promise(r => setTimeout(r, 2000));
-          
-          // Select USA
-          const countrySelect = document.querySelector('#country-select');
-          countrySelect.value = 'USA';
-          countrySelect.dispatchEvent(new Event('change'));
-          
-          // Wait for ports to load
-          await new Promise(r => setTimeout(r, 1000));
-          
-          // Select Houston
-          const portSelect = document.querySelector('#port-select');
-          portSelect.value = 'Houston (TX)';
-          
-          // Set date range
-          const startDate = document.querySelector('#start-date');
-          startDate.value = new Date().toISOString().split('T')[0];
-          
-          // Set weeks ahead
-          const weeksSelect = document.querySelector('#weeks-ahead');
-          weeksSelect.value = '12';
-          
-          // Click search
-          document.querySelector('#search-button').click();
-          
-          // Wait for results
-          await new Promise(r => setTimeout(r, 3000));
-          
-          // Extract schedule data
-          const schedules = [];
-          document.querySelectorAll('.schedule-row').forEach(row => {
-            const vesselName = row.querySelector('.vessel-name').textContent;
-            if (vesselName.startsWith('ZIM')) {
-              schedules.push({
-                vessel_name: vesselName,
-                carrier: 'ZIM',
-                departure_date: row.querySelector('.departure-date').textContent,
-                arrival_date: row.querySelector('.arrival-date').textContent,
-                doc_cutoff_date: row.querySelector('.doc-cutoff').textContent,
-                hazmat_doc_cutoff_date: row.querySelector('.hazmat-doc-cutoff').textContent,
-                cargo_cutoff_date: row.querySelector('.cargo-cutoff').textContent,
-                hazmat_cargo_cutoff_date: row.querySelector('.hazmat-cargo-cutoff').textContent,
-                source: 'https://www.zim.com/schedules/schedule-by-port'
-              });
-            }
-          });
-          
-          return schedules;
-        }`
+        robotId: 'zim-schedule-scraper', // You'll need to create this robot in browse.ai
+        inputParameters: {
+          origin: 'Houston (TX)',
+          weeksAhead: '12'
+        }
       })
     });
 
@@ -87,47 +35,93 @@ serve(async (req) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const schedules = await response.json();
-    console.log(`Found ${schedules.length} ZIM schedules`);
+    const result = await response.json();
+    console.log('Browse.ai task created:', result.taskId);
+
+    // Wait for the task to complete (browse.ai processes asynchronously)
+    const scheduleData = await pollTaskResult(result.taskId);
+    console.log(`Found ${scheduleData.length} ZIM schedules`);
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Store schedules in database
-    if (schedules.length > 0) {
-      const { data, error } = await supabase
+    // Transform and store schedules in database
+    if (scheduleData.length > 0) {
+      const schedules = scheduleData.map(schedule => ({
+        vessel_name: schedule.vesselName,
+        carrier: 'ZIM',
+        departure_date: new Date(schedule.departureDate),
+        arrival_date: new Date(schedule.arrivalDate),
+        doc_cutoff_date: new Date(schedule.docCutoff),
+        hazmat_doc_cutoff_date: new Date(schedule.hazmatDocCutoff),
+        cargo_cutoff_date: new Date(schedule.cargoCutoff),
+        hazmat_cargo_cutoff_date: new Date(schedule.hazmatCargoCutoff),
+        source: 'https://www.zim.com/schedules/schedule-by-port'
+      }));
+
+      const { error } = await supabase
         .from('vessel_schedules')
         .upsert(
           schedules.map(schedule => ({
             ...schedule,
-            // Use vessel_name and departure_date as unique identifier
             id: `${schedule.vessel_name}-${schedule.departure_date}`
           })),
           { onConflict: 'id' }
-        )
+        );
 
       if (error) {
-        console.error('Error storing schedules:', error)
-        throw error
+        console.error('Error storing schedules:', error);
+        throw error;
       }
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Successfully crawled and stored ${schedules.length} schedules`,
-        data: schedules
+        message: `Successfully crawled and stored ${scheduleData.length} schedules`,
+        data: scheduleData
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
 
   } catch (error) {
-    console.error('Error processing request:', error)
+    console.error('Error processing request:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   }
-})
+});
+
+// Helper function to poll for task results
+async function pollTaskResult(taskId: string, maxAttempts = 10): Promise<any[]> {
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    const response = await fetch(`https://api.browse.ai/v2/tasks/${taskId}`, {
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.status === 'completed') {
+      return result.data.schedules || [];
+    } else if (result.status === 'failed') {
+      throw new Error('Task failed: ' + result.error);
+    }
+
+    // Wait 5 seconds before next attempt
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    attempts++;
+  }
+
+  throw new Error('Timeout waiting for task completion');
+}
