@@ -6,12 +6,14 @@ interface ScheduleHeaderProps {
   unreadNotifications: number;
   onRefresh: () => void;
   onAddSchedule: () => void;
+  isRefreshing?: boolean;
 }
 
 export const ScheduleHeader = ({
   unreadNotifications,
   onRefresh,
   onAddSchedule,
+  isRefreshing = false,
 }: ScheduleHeaderProps) => {
   return (
     <div className="flex justify-between items-center mb-6">
@@ -32,9 +34,13 @@ export const ScheduleHeader = ({
             </span>
           )}
         </Button>
-        <Button onClick={onRefresh} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
+        <Button 
+          onClick={onRefresh} 
+          variant="outline"
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
         <Button onClick={onAddSchedule}>
           <Plus className="h-4 w-4 mr-2" />

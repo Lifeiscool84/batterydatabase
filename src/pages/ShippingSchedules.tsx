@@ -9,7 +9,6 @@ import { ScheduleFilters } from "@/components/shipping/ScheduleFilters";
 import { ScheduleList } from "@/components/shipping/ScheduleList";
 import { ScheduleDialog } from "@/components/shipping/ScheduleDialog";
 import { ScheduleHeader } from "@/components/shipping/ScheduleHeader";
-import { VesselLineCrawler } from "@/components/shipping/VesselLineCrawler";
 import { useSchedules } from "@/hooks/useSchedules";
 
 const ShippingSchedules = () => {
@@ -21,6 +20,7 @@ const ShippingSchedules = () => {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<VesselSchedule | undefined>();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: ports } = useQuery({
     queryKey: ["ports"],
@@ -43,17 +43,31 @@ const ShippingSchedules = () => {
 
   const handleRefresh = async () => {
     try {
+      setIsRefreshing(true);
+      
+      // Call the edge function to crawl schedules
+      const { data, error } = await supabase.functions.invoke('crawl-vessel-schedule', {
+        body: { automated: false }
+      });
+
+      if (error) throw error;
+
+      // Refetch schedules from the database
       await refetchSchedules();
+      
       toast({
         title: "Schedules refreshed",
         description: `Last updated: ${format(new Date(), "PPpp")}`,
       });
     } catch (error) {
+      console.error('Error refreshing schedules:', error);
       toast({
         variant: "destructive",
         title: "Error refreshing schedules",
         description: "Please try again later",
       });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -90,8 +104,6 @@ const ShippingSchedules = () => {
           onRefresh={handleRefresh}
           onAddSchedule={() => setIsDialogOpen(true)}
         />
-
-        <VesselLineCrawler />
 
         <ScheduleFilters
           originPorts={originPorts}
