@@ -48,7 +48,6 @@ export const VesselLineCrawler = () => {
     setCrawlResult(null);
 
     try {
-      // Call Supabase Edge Function to handle the crawling
       const response = await fetch('/api/crawl-vessel-schedule', {
         method: 'POST',
         headers: {
@@ -63,7 +62,7 @@ export const VesselLineCrawler = () => {
         toast({
           title: "Success",
           description: "Schedule data fetched successfully",
-          duration: 3000,
+          duration: 2000, // Changed to 2000ms (2 seconds)
         });
         setCrawlResult(result);
         setProgress(100);
@@ -72,7 +71,7 @@ export const VesselLineCrawler = () => {
           title: "Error",
           description: result.error || "Failed to fetch schedule data",
           variant: "destructive",
-          duration: 3000,
+          duration: 2000, // Changed to 2000ms (2 seconds)
         });
       }
     } catch (error) {
@@ -81,7 +80,7 @@ export const VesselLineCrawler = () => {
         title: "Error",
         description: "Failed to fetch schedule data",
         variant: "destructive",
-        duration: 3000,
+        duration: 2000, // Changed to 2000ms (2 seconds)
       });
     } finally {
       setIsLoading(false);
