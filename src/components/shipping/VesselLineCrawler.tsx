@@ -1,86 +1,47 @@
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CrawlResult {
   success: boolean;
-  status?: string;
-  completed?: number;
-  total?: number;
-  creditsUsed?: number;
-  expiresAt?: string;
+  message?: string;
   data?: any[];
 }
 
 export const VesselLineCrawler = () => {
   const { toast } = useToast();
-  const [url, setUrl] = useState('');
-  const [carrier, setCarrier] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [crawlResult, setCrawlResult] = useState<CrawlResult | null>(null);
 
-  const carrierUrls = {
-    ZIM: 'https://www.zim.com/schedules',
-    HMM: 'https://www.hmm21.com/cms/business/ebiz/schedule/default.jsp'
-  };
-
-  const handleCarrierChange = (value: string) => {
-    setCarrier(value);
-    setUrl(carrierUrls[value as keyof typeof carrierUrls] || '');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setProgress(0);
-    setCrawlResult(null);
-
+  const handleScrape = async () => {
     try {
-      const response = await fetch('/api/crawl-vessel-schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url, carrier }),
+      setIsLoading(true);
+      setProgress(25);
+      
+      const { data, error } = await supabase.functions.invoke('zim-schedule-scraper');
+      
+      if (error) throw error;
+      
+      setProgress(100);
+      setCrawlResult(data as CrawlResult);
+      
+      toast({
+        title: "Success",
+        description: "Successfully fetched shipping schedules",
+        duration: 3000,
       });
-
-      const result = await response.json();
-
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Schedule data fetched successfully",
-          duration: 2000, // Changed to 2000ms (2 seconds)
-        });
-        setCrawlResult(result);
-        setProgress(100);
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to fetch schedule data",
-          variant: "destructive",
-          duration: 2000, // Changed to 2000ms (2 seconds)
-        });
-      }
+      
     } catch (error) {
-      console.error('Error fetching schedule data:', error);
+      console.error('Error scraping schedules:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch schedule data",
+        description: error instanceof Error ? error.message : "Failed to fetch schedules",
         variant: "destructive",
-        duration: 2000, // Changed to 2000ms (2 seconds)
+        duration: 3000,
       });
     } finally {
       setIsLoading(false);
@@ -89,66 +50,33 @@ export const VesselLineCrawler = () => {
 
   return (
     <Card className="p-6 mb-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="carrier">Carrier</Label>
-          <Select value={carrier} onValueChange={handleCarrierChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select carrier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ZIM">ZIM</SelectItem>
-              <SelectItem value="HMM">HMM</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="url">Website URL</Label>
-          <Input
-            id="url"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://example.com"
-            required
-            className="w-full"
-          />
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">ZIM Schedule Scraper</h3>
+          <Button
+            onClick={handleScrape}
+            disabled={isLoading}
+          >
+            {isLoading ? "Fetching Schedules..." : "Fetch ZIM Schedules"}
+          </Button>
         </div>
 
         {isLoading && (
           <Progress value={progress} className="w-full" />
         )}
 
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full"
-        >
-          {isLoading ? "Fetching Schedules..." : "Fetch Schedules"}
-        </Button>
-      </form>
-
-      {crawlResult && crawlResult.data && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Crawl Results</h3>
-          <div className="space-y-2 text-sm">
-            <p>Status: {crawlResult.status}</p>
-            <p>Completed Pages: {crawlResult.completed}</p>
-            <p>Total Pages: {crawlResult.total}</p>
-            <p>Credits Used: {crawlResult.creditsUsed}</p>
-            {crawlResult.expiresAt && (
-              <p>Expires At: {new Date(crawlResult.expiresAt).toLocaleString()}</p>
-            )}
-            <div className="mt-4">
-              <p className="font-semibold mb-2">Schedule Data:</p>
-              <pre className="bg-gray-100 p-2 rounded overflow-auto max-h-60">
-                {JSON.stringify(crawlResult.data, null, 2)}
-              </pre>
+        {crawlResult && (
+          <div className="mt-4">
+            <h4 className="font-medium mb-2">Results:</h4>
+            <div className="bg-gray-50 p-4 rounded-md">
+              <p>{crawlResult.message}</p>
+              {crawlResult.data && (
+                <p className="mt-2">Found {crawlResult.data.length} schedules</p>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </Card>
   );
 };
