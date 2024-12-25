@@ -15,7 +15,12 @@ export const MapView = ({ location }: MapViewProps) => {
     if (!mapContainer.current) return;
 
     // Initialize map
-    mapboxgl.accessToken = "YOUR_MAPBOX_TOKEN"; // You'll need to add this
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || ""; // Use environment variable
+    
+    if (!mapboxgl.accessToken) {
+      console.error("Mapbox token is required");
+      return;
+    }
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
