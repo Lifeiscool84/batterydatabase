@@ -17,7 +17,38 @@ export const VesselLineCrawler = () => {
   const [progress, setProgress] = useState(0);
   const [crawlResult, setCrawlResult] = useState<CrawlResult | null>(null);
 
-  const handleScrape = async () => {
+  const handleScrapeHMM = async () => {
+    try {
+      setIsLoading(true);
+      setProgress(25);
+      
+      const { data, error } = await supabase.functions.invoke('hmm-schedule-scraper');
+      
+      if (error) throw error;
+      
+      setProgress(100);
+      setCrawlResult(data as CrawlResult);
+      
+      toast({
+        title: "Success",
+        description: "Successfully fetched HMM shipping schedules",
+        duration: 3000,
+      });
+      
+    } catch (error) {
+      console.error('Error scraping HMM schedules:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch schedules",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleScrapeZIM = async () => {
     try {
       setIsLoading(true);
       setProgress(25);
@@ -31,12 +62,12 @@ export const VesselLineCrawler = () => {
       
       toast({
         title: "Success",
-        description: "Successfully fetched shipping schedules",
+        description: "Successfully fetched ZIM shipping schedules",
         duration: 3000,
       });
       
     } catch (error) {
-      console.error('Error scraping schedules:', error);
+      console.error('Error scraping ZIM schedules:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to fetch schedules",
@@ -52,13 +83,21 @@ export const VesselLineCrawler = () => {
     <Card className="p-6 mb-6">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">ZIM Schedule Scraper</h3>
-          <Button
-            onClick={handleScrape}
-            disabled={isLoading}
-          >
-            {isLoading ? "Fetching Schedules..." : "Fetch ZIM Schedules"}
-          </Button>
+          <h3 className="text-lg font-semibold">Vessel Schedule Scrapers</h3>
+          <div className="space-x-4">
+            <Button
+              onClick={handleScrapeHMM}
+              disabled={isLoading}
+            >
+              {isLoading ? "Fetching HMM..." : "Fetch HMM Schedules"}
+            </Button>
+            <Button
+              onClick={handleScrapeZIM}
+              disabled={isLoading}
+            >
+              {isLoading ? "Fetching ZIM..." : "Fetch ZIM Schedules"}
+            </Button>
+          </div>
         </div>
 
         {isLoading && (

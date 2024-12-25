@@ -22,6 +22,7 @@ serve(async (req) => {
     const page = await browser.newPage();
     
     // Navigate to HMM schedules page
+    console.log('Navigating to HMM website...');
     await page.goto('https://www.hmm21.com/company.do', {
       waitUntil: 'networkidle0',
       timeout: 60000,
@@ -29,24 +30,34 @@ serve(async (req) => {
 
     console.log('Page loaded, filling search form...');
 
-    // Fill the form
-    await page.type('input[name="from"]', 'NEW YORK, NY');
-    await page.type('input[name="to"]', 'BUSAN, KOREA');
+    // Fill the form with explicit wait times
+    await page.waitForSelector('input[name="from"]');
+    await page.type('input[name="from"]', 'NEW YORK, NY', { delay: 100 });
+    
+    await page.waitForSelector('input[name="to"]');
+    await page.type('input[name="to"]', 'BUSAN, KOREA', { delay: 100 });
     
     // Select 8 weeks duration
+    await page.waitForSelector('select[name="duration"]');
     await page.select('select[name="duration"]', '8');
     
-    // Click search button
+    console.log('Form filled, clicking search button...');
+    
+    // Click search button with explicit wait
+    await page.waitForSelector('button[type="submit"]');
     await page.click('button[type="submit"]');
 
-    // Wait for results table
+    // Wait for results table with longer timeout
+    console.log('Waiting for results table...');
     await page.waitForSelector('table.schedule-table', { timeout: 30000 });
 
-    console.log('Search results loaded, extracting data...');
+    console.log('Results loaded, extracting data...');
 
-    // Extract schedule data
+    // Extract schedule data with detailed logging
     const schedules = await page.evaluate(() => {
       const rows = Array.from(document.querySelectorAll('table.schedule-table tbody tr'));
+      console.log(`Found ${rows.length} schedule rows`);
+      
       return rows.map(row => {
         const cells = Array.from(row.querySelectorAll('td'));
         return {
@@ -65,7 +76,7 @@ serve(async (req) => {
     // Transform dates and create final schedule objects
     const transformedSchedules = schedules.map(schedule => ({
       vessel_name: schedule.vessel_name,
-      carrier: 'HMM' as const, // Type assertion to fix carrier type
+      carrier: 'HMM',
       departure_date: new Date(schedule.departure_date).toISOString(),
       arrival_date: new Date(schedule.arrival_date).toISOString(),
       doc_cutoff_date: new Date(schedule.doc_cutoff).toISOString(),
@@ -75,20 +86,27 @@ serve(async (req) => {
       source: 'https://www.hmm21.com'
     }));
 
-    // Store in Supabase
+    // Store in Supabase with detailed logging
+    console.log('Storing schedules in Supabase...');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { error } = await supabase
-      .from('vessel_schedules')
-      .upsert(
-        transformedSchedules,
-        { onConflict: 'vessel_name,departure_date' }
-      );
+    for (const schedule of transformedSchedules) {
+      const { error } = await supabase
+        .from('vessel_schedules')
+        .upsert(schedule, {
+          onConflict: 'vessel_name,departure_date'
+        });
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error storing schedule:', error);
+        throw error;
+      }
+    }
+
+    console.log('Successfully stored all schedules');
 
     return new Response(
       JSON.stringify({
@@ -102,7 +120,11 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error processing request:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        stack: error.stack // Including stack trace for debugging
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
