@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
+import { Database } from "@/integrations/supabase/types";
+
+type ShippingLine = Database["public"]["Enums"]["shipping_line"];
 
 export const ScheduleImporter = () => {
   const { toast } = useToast();
@@ -14,7 +17,7 @@ export const ScheduleImporter = () => {
   const processExcelData = (data: any[]) => {
     return data.map(row => ({
       vessel_name: row['Vessel Name'] || row['vessel_name'],
-      carrier: 'ZIM',
+      carrier: 'ZIM' as ShippingLine, // Type assertion to ensure it matches the enum
       departure_date: new Date(row['Departure'] || row['departure_date']).toISOString(),
       arrival_date: new Date(row['Arrival'] || row['arrival_date']).toISOString(),
       doc_cutoff_date: new Date(row['Doc Cut-off'] || row['doc_cutoff_date']).toISOString(),
@@ -48,13 +51,16 @@ export const ScheduleImporter = () => {
           
           setProgress(75);
 
-          const { error } = await supabase
-            .from('vessel_schedules')
-            .upsert(processedData, {
-              onConflict: 'vessel_name,departure_date'
-            });
+          // Insert each record individually to ensure proper typing
+          for (const record of processedData) {
+            const { error } = await supabase
+              .from('vessel_schedules')
+              .upsert(record, {
+                onConflict: 'vessel_name,departure_date'
+              });
 
-          if (error) throw error;
+            if (error) throw error;
+          }
 
           setProgress(100);
           toast({
