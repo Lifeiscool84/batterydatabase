@@ -9,13 +9,13 @@ export const facilityImportSchema = z.object({
   address: z.string().min(1, "Address is required"),
   phone: z.string().regex(phoneRegex, "Phone must be in format (XXX) XXX-XXXX"),
   size: z.enum(["Small", "Medium", "Large"]).default("Medium"),
-  email: z.string().email().optional(),
-  website: z.string().regex(urlRegex, "Invalid website URL").optional(),
-  buying_price: z.number().positive().optional(),
-  selling_price: z.number().positive().optional(),
-  last_contact: z.string().datetime().optional(),
-  general_remarks: z.string().optional(),
-  internal_notes: z.string().optional(),
+  email: z.string().email().optional().nullable(),
+  website: z.string().regex(urlRegex, "Invalid website URL").optional().nullable(),
+  buying_price: z.number().positive().optional().nullable(),
+  selling_price: z.number().positive().optional().nullable(),
+  last_contact: z.string().datetime().optional().nullable(),
+  general_remarks: z.string().optional().nullable(),
+  internal_notes: z.string().optional().nullable(),
 });
 
 export type FacilityImportData = z.infer<typeof facilityImportSchema>;
@@ -29,11 +29,14 @@ export const validateImportData = (data: any[]): {
 
   data.forEach((row, index) => {
     try {
-      // Ensure required fields have default values if not provided
+      // Process the data before validation
       const processedRow = {
         ...row,
         status: row.status?.toLowerCase() || 'general',
         size: row.size || 'Medium',
+        // Convert string numbers to actual numbers
+        buying_price: row.buying_price ? Number(row.buying_price) : null,
+        selling_price: row.selling_price ? Number(row.selling_price) : null,
       };
 
       const validatedRow = facilityImportSchema.parse(processedRow);

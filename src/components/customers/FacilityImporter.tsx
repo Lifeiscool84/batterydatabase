@@ -7,6 +7,10 @@ import { ImportPreview } from "./import/ImportPreview";
 import { ImportActions } from "./import/ImportActions";
 import { validateImportData, type FacilityImportData } from "./validation/importValidation";
 
+const EXAMPLE_DATA = `name,status,address,phone,size,email,website,buying_price,selling_price
+ABC Recycling,active,"123 Main St, Houston, TX",(555) 123-4567,Medium,contact@abc.com,www.abc.com,250,300
+XYZ Metals,engaged,"456 Oak Ave, Houston, TX",(555) 987-6543,Large,info@xyz.com,www.xyz.com,275,325`;
+
 export const FacilityImporter = () => {
   const [rawData, setRawData] = useState("");
   const [preview, setPreview] = useState<FacilityImportData[]>([]);
@@ -41,13 +45,7 @@ export const FacilityImporter = () => {
         headers.forEach((header, i) => {
           const value = row[i];
           if (value === undefined || value === '') return;
-          
-          // Convert numeric values
-          if (['buying_price', 'selling_price'].includes(header)) {
-            obj[header] = parseFloat(value);
-          } else {
-            obj[header] = value;
-          }
+          obj[header] = value;
         });
         return obj;
       });
@@ -107,10 +105,7 @@ export const FacilityImporter = () => {
                 <textarea
                   id="data"
                   className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Paste CSV data here... 
-Example:
-name,status,address,phone,size,email,website,buying_price,selling_price
-ABC Recycling,active,123 Main St,(555) 123-4567,Medium,contact@abc.com,www.abc.com,250,300"
+                  placeholder={`Paste CSV data here...\n\nExample format:\n${EXAMPLE_DATA}`}
                   value={rawData}
                   onChange={(e) => handlePaste(e.target.value)}
                 />
