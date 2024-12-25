@@ -45,6 +45,7 @@ export const VesselLineCrawler = () => {
       });
     } finally {
       setIsLoading(false);
+      setProgress(0);
     }
   };
 
@@ -76,6 +77,7 @@ export const VesselLineCrawler = () => {
       });
     } finally {
       setIsLoading(false);
+      setProgress(0);
     }
   };
 
@@ -84,16 +86,18 @@ export const VesselLineCrawler = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Vessel Schedule Scrapers</h3>
-          <div className="space-x-4">
+          <div className="flex gap-4">
             <Button
               onClick={handleScrapeHMM}
               disabled={isLoading}
+              variant="secondary"
             >
               {isLoading ? "Fetching HMM..." : "Fetch HMM Schedules"}
             </Button>
             <Button
               onClick={handleScrapeZIM}
               disabled={isLoading}
+              variant="secondary"
             >
               {isLoading ? "Fetching ZIM..." : "Fetch ZIM Schedules"}
             </Button>
