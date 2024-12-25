@@ -22,9 +22,9 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        robotId: 'hmm-schedule-scraper', // You'll need to create this robot in browse.ai
+        robotId: 'hmm-schedule-scraper',
         inputParameters: {
-          origin: 'New York',
+          origin: 'Houston',
           destination: 'Busan',
           weeksAhead: '8'
         }
@@ -32,7 +32,13 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Browse.ai API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
+      throw new Error(`Browse.ai API error: ${response.status} ${response.statusText}`);
     }
 
     const result = await response.json();
@@ -94,7 +100,10 @@ serve(async (req) => {
         error: error.message,
         stack: error.stack
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 500 
+      }
     );
   }
 });
@@ -104,6 +113,8 @@ async function pollTaskResult(taskId: string, maxAttempts = 10): Promise<any[]> 
   let attempts = 0;
   
   while (attempts < maxAttempts) {
+    console.log(`Polling attempt ${attempts + 1} for task ${taskId}`);
+    
     const response = await fetch(`https://api.browse.ai/v2/tasks/${taskId}`, {
       headers: {
         'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`
@@ -111,14 +122,23 @@ async function pollTaskResult(taskId: string, maxAttempts = 10): Promise<any[]> 
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error polling task:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
+    console.log('Task status:', result.status);
     
     if (result.status === 'completed') {
+      console.log('Task completed successfully');
       return result.data.schedules || [];
     } else if (result.status === 'failed') {
+      console.error('Task failed:', result.error);
       throw new Error('Task failed: ' + result.error);
     }
 
