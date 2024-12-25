@@ -14,20 +14,19 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
 
   const handleImport = async () => {
     try {
-      // Ensure all required fields are present before insertion
       const preparedData = data.map(facility => ({
         name: facility.name,
         status: facility.status,
         address: facility.address,
         phone: facility.phone,
         size: facility.size,
-        email: facility.email || null,
-        website: facility.website || null,
-        buying_price: facility.buying_price || null,
-        selling_price: facility.selling_price || null,
-        last_contact: facility.last_contact || null,
-        general_remarks: facility.general_remarks || null,
-        internal_notes: facility.internal_notes || null,
+        email: facility.email,
+        website: facility.website,
+        buying_price: facility.buying_price,
+        selling_price: facility.selling_price,
+        last_contact: facility.last_contact,
+        general_remarks: facility.general_remarks,
+        internal_notes: facility.internal_notes,
       }));
 
       const { error } = await supabase

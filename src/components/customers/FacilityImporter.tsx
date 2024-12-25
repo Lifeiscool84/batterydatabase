@@ -15,16 +15,32 @@ export const FacilityImporter = () => {
 
   const handlePaste = (text: string) => {
     setRawData(text);
+    if (!text.trim()) {
+      setPreview([]);
+      setErrors({});
+      return;
+    }
+
     try {
       const rows = text.trim().split('\n').map(row => 
         row.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
       );
-      const headers = rows[0];
+      
+      if (rows.length < 2) {
+        toast({
+          title: "Invalid data format",
+          description: "Please include a header row and at least one data row",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const headers = rows[0].map(h => h.toLowerCase());
       const data = rows.slice(1).map(row => {
-        const obj: any = {};
+        const obj: Record<string, any> = {};
         headers.forEach((header, i) => {
           const value = row[i];
-          if (value === '') return;
+          if (value === undefined || value === '') return;
           
           // Convert numeric values
           if (['buying_price', 'selling_price'].includes(header)) {
@@ -39,7 +55,21 @@ export const FacilityImporter = () => {
       const { validData, errors } = validateImportData(data);
       setPreview(validData);
       setErrors(errors);
+
+      if (Object.keys(errors).length > 0) {
+        toast({
+          title: "Validation issues found",
+          description: "Please review the errors below and correct the data",
+          variant: "destructive",
+        });
+      } else if (validData.length > 0) {
+        toast({
+          title: "Data validated successfully",
+          description: `${validData.length} records ready to import`,
+        });
+      }
     } catch (error) {
+      console.error('Parse error:', error);
       toast({
         title: "Error parsing data",
         description: "Please check your data format and try again",
@@ -52,6 +82,10 @@ export const FacilityImporter = () => {
     setRawData("");
     setPreview([]);
     setErrors({});
+    toast({
+      title: "Import completed",
+      description: "Facilities have been successfully imported",
+    });
   };
 
   return (
@@ -73,7 +107,10 @@ export const FacilityImporter = () => {
                 <textarea
                   id="data"
                   className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Paste CSV data here..."
+                  placeholder="Paste CSV data here... 
+Example:
+name,status,address,phone,size,email,website,buying_price,selling_price
+ABC Recycling,active,123 Main St,(555) 123-4567,Medium,contact@abc.com,www.abc.com,250,300"
                   value={rawData}
                   onChange={(e) => handlePaste(e.target.value)}
                 />

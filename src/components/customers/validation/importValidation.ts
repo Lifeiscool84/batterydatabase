@@ -5,15 +5,15 @@ const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  status: z.enum(["active", "engaged", "past", "general"]),
+  status: z.enum(["active", "engaged", "past", "general"]).default("general"),
   address: z.string().min(1, "Address is required"),
   phone: z.string().regex(phoneRegex, "Phone must be in format (XXX) XXX-XXXX"),
+  size: z.enum(["Small", "Medium", "Large"]).default("Medium"),
   email: z.string().email().optional(),
-  website: z.string().regex(urlRegex).optional(),
+  website: z.string().regex(urlRegex, "Invalid website URL").optional(),
   buying_price: z.number().positive().optional(),
   selling_price: z.number().positive().optional(),
   last_contact: z.string().datetime().optional(),
-  size: z.enum(["Small", "Medium", "Large"]),
   general_remarks: z.string().optional(),
   internal_notes: z.string().optional(),
 });
@@ -29,19 +29,18 @@ export const validateImportData = (data: any[]): {
 
   data.forEach((row, index) => {
     try {
-      const validatedRow = facilityImportSchema.parse({
+      // Ensure required fields have default values if not provided
+      const processedRow = {
         ...row,
-        // Ensure required fields are present and not undefined
-        name: row.name || '',
-        status: row.status || 'general',
-        address: row.address || '',
-        phone: row.phone || '',
+        status: row.status?.toLowerCase() || 'general',
         size: row.size || 'Medium',
-      });
+      };
+
+      const validatedRow = facilityImportSchema.parse(processedRow);
       validData.push(validatedRow);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        errors[index] = error.errors.map(e => e.message);
+        errors[index] = error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
       }
     }
   });
