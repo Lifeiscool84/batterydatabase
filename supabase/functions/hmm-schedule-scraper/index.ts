@@ -12,39 +12,22 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting HMM schedule scraping using browse.ai...');
+    console.log('Starting HMM schedule scraping...');
     
-    // Use browse.ai API to fetch schedules
-    const response = await fetch('https://api.browse.ai/v2/robots/8f3e9c3f-f8c7-4d6c-9e9c-3ff8c74d6c9e/tasks', {
-      method: 'POST',
+    // Use direct HTTP requests to fetch schedules
+    const response = await fetch('https://api.hmm21.com/schedules', {
+      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('HMM_API_KEY')}`,
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        inputParameters: {
-          origin: 'Houston',
-          destination: 'Busan',
-          weeksAhead: '8'
-        }
-      })
+      }
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Browse.ai API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
-      });
-      throw new Error(`Browse.ai API error: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result = await response.json();
-    console.log('Browse.ai task created:', result.taskId);
-
-    // Wait for the task to complete
-    const scheduleData = await pollTaskResult(result.taskId);
+    const scheduleData = await response.json();
     console.log(`Found ${scheduleData.length} HMM schedules`);
 
     // Create Supabase client
@@ -106,45 +89,3 @@ serve(async (req) => {
     );
   }
 });
-
-// Helper function to poll for task results
-async function pollTaskResult(taskId: string, maxAttempts = 10): Promise<any[]> {
-  let attempts = 0;
-  
-  while (attempts < maxAttempts) {
-    console.log(`Polling attempt ${attempts + 1} for task ${taskId}`);
-    
-    const response = await fetch(`https://api.browse.ai/v2/tasks/${taskId}`, {
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error polling task:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
-      });
-      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('Task status:', result.status);
-    
-    if (result.status === 'completed') {
-      console.log('Task completed successfully');
-      return result.data.schedules || [];
-    } else if (result.status === 'failed') {
-      console.error('Task failed:', result.error);
-      throw new Error('Task failed: ' + result.error);
-    }
-
-    // Wait 5 seconds before next attempt
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    attempts++;
-  }
-
-  throw new Error('Timeout waiting for task completion');
-}
