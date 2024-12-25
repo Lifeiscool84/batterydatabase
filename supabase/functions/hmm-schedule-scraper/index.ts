@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,14 +15,19 @@ serve(async (req) => {
     console.log('Starting HMM schedule scraping...');
     
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--single-process'
+      ]
     });
     
     const page = await browser.newPage();
     
     // Navigate to HMM schedules page
     console.log('Navigating to HMM website...');
-    await page.goto('https://www.hmm21.com/company.do', {
+    await page.goto('https://www.hmm21.com/cms/company/engn/index.jsp', {
       waitUntil: 'networkidle0',
       timeout: 60000,
     });
@@ -31,20 +35,20 @@ serve(async (req) => {
     console.log('Page loaded, filling search form...');
 
     // Fill the form with explicit wait times
-    await page.waitForSelector('input[name="from"]');
+    await page.waitForSelector('input[name="from"]', { timeout: 10000 });
     await page.type('input[name="from"]', 'NEW YORK, NY', { delay: 100 });
     
-    await page.waitForSelector('input[name="to"]');
+    await page.waitForSelector('input[name="to"]', { timeout: 10000 });
     await page.type('input[name="to"]', 'BUSAN, KOREA', { delay: 100 });
     
     // Select 8 weeks duration
-    await page.waitForSelector('select[name="duration"]');
+    await page.waitForSelector('select[name="duration"]', { timeout: 10000 });
     await page.select('select[name="duration"]', '8');
     
     console.log('Form filled, clicking search button...');
     
     // Click search button with explicit wait
-    await page.waitForSelector('button[type="submit"]');
+    await page.waitForSelector('button[type="submit"]', { timeout: 10000 });
     await page.click('button[type="submit"]');
 
     // Wait for results table with longer timeout
@@ -123,7 +127,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: false, 
         error: error.message,
-        stack: error.stack // Including stack trace for debugging
+        stack: error.stack
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
