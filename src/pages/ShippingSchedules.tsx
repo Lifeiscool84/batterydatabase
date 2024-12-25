@@ -9,6 +9,7 @@ import { ScheduleFilters } from "@/components/shipping/ScheduleFilters";
 import { ScheduleTable } from "@/components/shipping/ScheduleTable";
 import { ScheduleDialog } from "@/components/shipping/ScheduleDialog";
 import { ScheduleHeader } from "@/components/shipping/ScheduleHeader";
+import { ScheduleImporter } from "@/components/shipping/ScheduleImporter";
 import { useSchedules } from "@/hooks/useSchedules";
 
 const ShippingSchedules = () => {
@@ -154,6 +155,8 @@ const ShippingSchedules = () => {
           onAddSchedule={() => setIsDialogOpen(true)}
           isRefreshing={isRefreshing}
         />
+
+        <ScheduleImporter />
 
         <ScheduleFilters
           originPorts={originPorts}
