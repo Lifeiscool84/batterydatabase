@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,111 +12,76 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting HMM schedule scraping...');
+    console.log('Starting HMM schedule scraping using browse.ai...');
     
-    const browser = await puppeteer.launch({
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--single-process'
-      ]
-    });
-    
-    const page = await browser.newPage();
-    
-    // Navigate to HMM schedules page
-    console.log('Navigating to HMM website...');
-    await page.goto('https://www.hmm21.com/cms/company/engn/index.jsp', {
-      waitUntil: 'networkidle0',
-      timeout: 60000,
-    });
-
-    console.log('Page loaded, filling search form...');
-
-    // Fill the form with explicit wait times
-    await page.waitForSelector('input[name="from"]', { timeout: 10000 });
-    await page.type('input[name="from"]', 'NEW YORK, NY', { delay: 100 });
-    
-    await page.waitForSelector('input[name="to"]', { timeout: 10000 });
-    await page.type('input[name="to"]', 'BUSAN, KOREA', { delay: 100 });
-    
-    // Select 8 weeks duration
-    await page.waitForSelector('select[name="duration"]', { timeout: 10000 });
-    await page.select('select[name="duration"]', '8');
-    
-    console.log('Form filled, clicking search button...');
-    
-    // Click search button with explicit wait
-    await page.waitForSelector('button[type="submit"]', { timeout: 10000 });
-    await page.click('button[type="submit"]');
-
-    // Wait for results table with longer timeout
-    console.log('Waiting for results table...');
-    await page.waitForSelector('table.schedule-table', { timeout: 30000 });
-
-    console.log('Results loaded, extracting data...');
-
-    // Extract schedule data with detailed logging
-    const schedules = await page.evaluate(() => {
-      const rows = Array.from(document.querySelectorAll('table.schedule-table tbody tr'));
-      console.log(`Found ${rows.length} schedule rows`);
-      
-      return rows.map(row => {
-        const cells = Array.from(row.querySelectorAll('td'));
-        return {
-          vessel_name: cells[0]?.textContent?.trim() || '',
-          departure_date: cells[1]?.textContent?.trim() || '',
-          arrival_date: cells[2]?.textContent?.trim() || '',
-          doc_cutoff: cells[3]?.textContent?.trim() || '',
-          cargo_cutoff: cells[4]?.textContent?.trim() || ''
-        };
-      }).filter(schedule => schedule.vessel_name && schedule.departure_date);
+    // Use browse.ai API to fetch schedules
+    const response = await fetch('https://api.browse.ai/v2/robots/default/tasks', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        robotId: 'hmm-schedule-scraper', // You'll need to create this robot in browse.ai
+        inputParameters: {
+          origin: 'New York',
+          destination: 'Busan',
+          weeksAhead: '8'
+        }
+      })
     });
 
-    await browser.close();
-    console.log(`Extracted ${schedules.length} schedules`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-    // Transform dates and create final schedule objects
-    const transformedSchedules = schedules.map(schedule => ({
-      vessel_name: schedule.vessel_name,
-      carrier: 'HMM',
-      departure_date: new Date(schedule.departure_date).toISOString(),
-      arrival_date: new Date(schedule.arrival_date).toISOString(),
-      doc_cutoff_date: new Date(schedule.doc_cutoff).toISOString(),
-      hazmat_doc_cutoff_date: new Date(schedule.doc_cutoff).toISOString(),
-      cargo_cutoff_date: new Date(schedule.cargo_cutoff).toISOString(),
-      hazmat_cargo_cutoff_date: new Date(schedule.cargo_cutoff).toISOString(),
-      source: 'https://www.hmm21.com'
-    }));
+    const result = await response.json();
+    console.log('Browse.ai task created:', result.taskId);
 
-    // Store in Supabase with detailed logging
-    console.log('Storing schedules in Supabase...');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Wait for the task to complete
+    const scheduleData = await pollTaskResult(result.taskId);
+    console.log(`Found ${scheduleData.length} HMM schedules`);
 
-    for (const schedule of transformedSchedules) {
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Transform and store schedules in database
+    if (scheduleData.length > 0) {
+      const schedules = scheduleData.map(schedule => ({
+        vessel_name: schedule.vesselName,
+        carrier: 'HMM',
+        departure_date: new Date(schedule.departureDate),
+        arrival_date: new Date(schedule.arrivalDate),
+        doc_cutoff_date: new Date(schedule.docCutoff),
+        hazmat_doc_cutoff_date: new Date(schedule.hazmatDocCutoff),
+        cargo_cutoff_date: new Date(schedule.cargoCutoff),
+        hazmat_cargo_cutoff_date: new Date(schedule.hazmatCargoCutoff),
+        source: 'https://www.hmm21.com'
+      }));
+
       const { error } = await supabase
         .from('vessel_schedules')
-        .upsert(schedule, {
-          onConflict: 'vessel_name,departure_date'
-        });
+        .upsert(
+          schedules.map(schedule => ({
+            ...schedule,
+            id: `${schedule.vessel_name}-${schedule.departure_date}`
+          })),
+          { onConflict: 'id' }
+        );
 
       if (error) {
-        console.error('Error storing schedule:', error);
+        console.error('Error storing schedules:', error);
         throw error;
       }
     }
 
-    console.log('Successfully stored all schedules');
-
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Successfully scraped and stored ${transformedSchedules.length} schedules`,
-        data: transformedSchedules
+        message: `Successfully crawled and stored ${scheduleData.length} schedules`,
+        data: scheduleData
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -133,3 +98,34 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to poll for task results
+async function pollTaskResult(taskId: string, maxAttempts = 10): Promise<any[]> {
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    const response = await fetch(`https://api.browse.ai/v2/tasks/${taskId}`, {
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.status === 'completed') {
+      return result.data.schedules || [];
+    } else if (result.status === 'failed') {
+      throw new Error('Task failed: ' + result.error);
+    }
+
+    // Wait 5 seconds before next attempt
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    attempts++;
+  }
+
+  throw new Error('Timeout waiting for task completion');
+}
