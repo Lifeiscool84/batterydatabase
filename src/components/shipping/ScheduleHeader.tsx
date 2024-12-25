@@ -1,6 +1,8 @@
 import { Bell, Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/layout/BackButton";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ScheduleHeaderProps {
   unreadNotifications: number;
@@ -15,6 +17,38 @@ export const ScheduleHeader = ({
   onAddSchedule,
   isRefreshing = false,
 }: ScheduleHeaderProps) => {
+  const { toast } = useToast();
+
+  const handleRefresh = async () => {
+    try {
+      console.log('Starting HMM schedule scraping...');
+      
+      const { data, error } = await supabase.functions.invoke('hmm-schedule-scraper');
+      
+      if (error) throw error;
+      
+      console.log('Scraping result:', data);
+      
+      toast({
+        title: "Success",
+        description: "Successfully fetched HMM shipping schedules",
+        duration: 3000,
+      });
+      
+      // Call the parent's onRefresh to update the UI
+      onRefresh();
+      
+    } catch (error) {
+      console.error('Error scraping HMM schedules:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch schedules",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center">
@@ -35,7 +69,7 @@ export const ScheduleHeader = ({
           )}
         </Button>
         <Button 
-          onClick={onRefresh} 
+          onClick={handleRefresh} 
           variant="outline"
           disabled={isRefreshing}
         >
