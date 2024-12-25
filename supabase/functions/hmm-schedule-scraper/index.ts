@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting ZIM schedule scraping...');
+    console.log('Starting HMM schedule scraping...');
     
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -21,18 +21,33 @@ serve(async (req) => {
     
     const page = await browser.newPage();
     
-    await page.goto('https://zimchina.com/schedules/point-to-point', {
+    // Navigate to HMM schedules page
+    await page.goto('https://www.hmm21.com/company.do', {
       waitUntil: 'networkidle0',
       timeout: 60000,
     });
 
-    console.log('Page loaded, extracting schedule data...');
+    console.log('Page loaded, filling search form...');
 
-    await page.waitForSelector('table', { timeout: 30000 });
+    // Fill the form
+    await page.type('input[name="from"]', 'NEW YORK, NY');
+    await page.type('input[name="to"]', 'BUSAN, KOREA');
+    
+    // Select 8 weeks duration
+    await page.select('select[name="duration"]', '8');
+    
+    // Click search button
+    await page.click('button[type="submit"]');
 
+    // Wait for results table
+    await page.waitForSelector('table.schedule-table', { timeout: 30000 });
+
+    console.log('Search results loaded, extracting data...');
+
+    // Extract schedule data
     const schedules = await page.evaluate(() => {
-      const rows = Array.from(document.querySelectorAll('table tr'));
-      return rows.slice(1).map(row => {
+      const rows = Array.from(document.querySelectorAll('table.schedule-table tbody tr'));
+      return rows.map(row => {
         const cells = Array.from(row.querySelectorAll('td'));
         return {
           vessel_name: cells[0]?.textContent?.trim() || '',
@@ -47,18 +62,20 @@ serve(async (req) => {
     await browser.close();
     console.log(`Extracted ${schedules.length} schedules`);
 
+    // Transform dates and create final schedule objects
     const transformedSchedules = schedules.map(schedule => ({
       vessel_name: schedule.vessel_name,
-      carrier: 'ZIM' as const, // Type assertion to fix carrier type
+      carrier: 'HMM' as const, // Type assertion to fix carrier type
       departure_date: new Date(schedule.departure_date).toISOString(),
       arrival_date: new Date(schedule.arrival_date).toISOString(),
       doc_cutoff_date: new Date(schedule.doc_cutoff).toISOString(),
       hazmat_doc_cutoff_date: new Date(schedule.doc_cutoff).toISOString(),
       cargo_cutoff_date: new Date(schedule.cargo_cutoff).toISOString(),
       hazmat_cargo_cutoff_date: new Date(schedule.cargo_cutoff).toISOString(),
-      source: 'https://zimchina.com/schedules/point-to-point'
+      source: 'https://www.hmm21.com'
     }));
 
+    // Store in Supabase
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
