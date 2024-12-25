@@ -8,21 +8,20 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log('Starting HMM schedule scraping using browse.ai...');
     
     // Use browse.ai API to fetch schedules
-    const response = await fetch('https://api.browse.ai/v2/robots/default/tasks', {
+    const response = await fetch('https://api.browse.ai/v2/robots/8f3e9c3f-f8c7-4d6c-9e9c-3ff8c74d6c9e/tasks', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('BROWSE_AI_API_KEY')}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        robotId: 'hmm-schedule-scraper',
         inputParameters: {
           origin: 'Houston',
           destination: 'Busan',
@@ -38,7 +37,7 @@ serve(async (req) => {
         statusText: response.statusText,
         body: errorText
       });
-      throw new Error(`Browse.ai API error: ${response.status} ${response.statusText}`);
+      throw new Error(`Browse.ai API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const result = await response.json();
@@ -128,7 +127,7 @@ async function pollTaskResult(taskId: string, maxAttempts = 10): Promise<any[]> 
         statusText: response.statusText,
         body: errorText
       });
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
