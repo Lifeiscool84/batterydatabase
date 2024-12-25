@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -15,50 +15,60 @@ serve(async (req) => {
   try {
     console.log('Starting ZIM schedule scraping...');
     
-    // Launch browser
+    // Launch browser in headless mode
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     
     const page = await browser.newPage();
     
-    // Navigate to ZIM schedules page
+    // Navigate to ZIM schedules page with longer timeout
     await page.goto('https://zimchina.com/schedules/point-to-point', {
       waitUntil: 'networkidle0',
-      timeout: 30000,
+      timeout: 60000,
     });
 
-    console.log('Page loaded, starting data extraction...');
+    console.log('Page loaded, extracting schedule data...');
+
+    // Wait for the table to be visible
+    await page.waitForSelector('table', { timeout: 30000 });
 
     // Extract schedule data
     const schedules = await page.evaluate(() => {
-      const rows = document.querySelectorAll('table tr');
-      return Array.from(rows, row => {
-        const cells = row.querySelectorAll('td');
-        return Array.from(cells, cell => cell.textContent.trim());
-      }).filter(row => row.length > 0); // Filter out empty rows
+      const rows = Array.from(document.querySelectorAll('table tr'));
+      return rows.slice(1).map(row => { // Skip header row
+        const cells = Array.from(row.querySelectorAll('td'));
+        return {
+          vessel_name: cells[0]?.textContent?.trim() || '',
+          departure_date: cells[1]?.textContent?.trim() || '',
+          arrival_date: cells[2]?.textContent?.trim() || '',
+          doc_cutoff: cells[3]?.textContent?.trim() || '',
+          cargo_cutoff: cells[4]?.textContent?.trim() || ''
+        };
+      }).filter(schedule => schedule.vessel_name && schedule.departure_date);
     });
 
     await browser.close();
     console.log(`Extracted ${schedules.length} schedules`);
 
-    // Transform the data to match our vessel_schedules table structure
+    // Transform dates and create final schedule objects
     const transformedSchedules = schedules.map(schedule => ({
-      vessel_name: schedule[0],
+      vessel_name: schedule.vessel_name,
       carrier: 'ZIM',
-      departure_date: new Date(schedule[1]),
-      arrival_date: new Date(schedule[2]),
-      doc_cutoff_date: new Date(schedule[3]),
-      hazmat_doc_cutoff_date: new Date(schedule[3]), // Using same as doc cutoff if not provided
-      cargo_cutoff_date: new Date(schedule[4]),
-      hazmat_cargo_cutoff_date: new Date(schedule[4]), // Using same as cargo cutoff if not provided
+      departure_date: new Date(schedule.departure_date).toISOString(),
+      arrival_date: new Date(schedule.arrival_date).toISOString(),
+      doc_cutoff_date: new Date(schedule.doc_cutoff).toISOString(),
+      hazmat_doc_cutoff_date: new Date(schedule.doc_cutoff).toISOString(),
+      cargo_cutoff_date: new Date(schedule.cargo_cutoff).toISOString(),
+      hazmat_cargo_cutoff_date: new Date(schedule.cargo_cutoff).toISOString(),
       source: 'https://zimchina.com/schedules/point-to-point'
     }));
 
     // Store in Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
     const { error } = await supabase
       .from('vessel_schedules')
@@ -75,25 +85,14 @@ serve(async (req) => {
         message: `Successfully scraped and stored ${transformedSchedules.length} schedules`,
         data: transformedSchedules
       }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error processing request:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: 500
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
