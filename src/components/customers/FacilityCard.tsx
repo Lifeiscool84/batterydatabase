@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Status } from "@/pages/Customers";
+import { useState } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { FacilityDetails } from "./FacilityDetails";
 
 interface FacilityCardProps {
   facility: {
@@ -45,7 +48,58 @@ const sizeColors = {
   Large: "bg-pink-100 text-pink-800",
 };
 
+// Mock data for the details panel
+const mockPriceHistory = [
+  {
+    date: "2024-03-15T10:00:00",
+    buyingPrice: 250,
+    sellingPrice: 300,
+    updatedBy: "John Smith"
+  },
+  {
+    date: "2024-03-01T15:30:00",
+    buyingPrice: 245,
+    sellingPrice: 295,
+    updatedBy: "Sarah Johnson"
+  }
+];
+
+const mockInteractions = [
+  {
+    date: "2024-03-15T14:30:00",
+    type: "call" as const,
+    notes: "Discussed Q2 volume projections",
+    user: "John Smith"
+  },
+  {
+    date: "2024-03-10T11:00:00",
+    type: "email" as const,
+    notes: "Sent updated price sheet",
+    user: "Sarah Johnson"
+  }
+];
+
+const mockStatusHistory = [
+  {
+    date: "2024-03-15T10:00:00",
+    from: "engaged",
+    to: "active",
+    reason: "Contract signed",
+    user: "John Smith"
+  }
+];
+
+const mockCapabilities = [
+  "Non-ferrous processing",
+  "Ferrous processing",
+  "Container loading",
+  "Rail access",
+  "Truck scale"
+];
+
 export const FacilityCard = ({ facility }: FacilityCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <Card className="relative overflow-hidden">
       <div 
@@ -107,26 +161,43 @@ export const FacilityCard = ({ facility }: FacilityCardProps) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm">
-              <MessageSquare className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm">
-              <DollarSign className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm">
-              <PhoneCall className="h-4 w-4" />
-            </Button>
+        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm">
+                <MessageSquare className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm">
+                <DollarSign className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm">
+                <PhoneCall className="h-4 w-4" />
+              </Button>
+            </div>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", {
+                  "transform rotate-180": isExpanded
+                })} />
+                Details
+              </Button>
+            </CollapsibleTrigger>
           </div>
-          <Button variant="ghost" size="sm">
-            <ChevronDown className="h-4 w-4" />
-            Details
-          </Button>
-        </div>
+          
+          <CollapsibleContent className="mt-4">
+            <FacilityDetails
+              facilityId={facility.id}
+              priceHistory={mockPriceHistory}
+              interactions={mockInteractions}
+              statusHistory={mockStatusHistory}
+              capabilities={mockCapabilities}
+              notes={facility.remarks || "No additional notes."}
+            />
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
   );
