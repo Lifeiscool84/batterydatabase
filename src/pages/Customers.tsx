@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 import { LocationNav } from "@/components/customers/LocationNav";
 import { StatusView } from "@/components/customers/StatusView";
 import { ListView } from "@/components/customers/ListView";
 import { MapView } from "@/components/customers/MapView";
+import { FacilityImporter } from "@/components/customers/FacilityImporter";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 export type Location = "Houston" | "New York/New Jersey" | "Seattle" | "Mobile" | "Los Angeles";
 export type Status = "active" | "engaged" | "past" | "general";
@@ -14,7 +18,20 @@ const Customers = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Customer Management</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Customer Management</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Import Facilities
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl">
+            <FacilityImporter />
+          </DialogContent>
+        </Dialog>
+      </div>
       
       <LocationNav 
         selectedLocation={selectedLocation} 

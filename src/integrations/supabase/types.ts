@@ -9,6 +9,197 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      facilities: {
+        Row: {
+          address: string
+          buying_price: number | null
+          created_at: string | null
+          email: string | null
+          general_remarks: string | null
+          id: string
+          internal_notes: string | null
+          last_contact: string | null
+          name: string
+          phone: string
+          selling_price: number | null
+          size: Database["public"]["Enums"]["facility_size"]
+          status: Database["public"]["Enums"]["facility_status"]
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address: string
+          buying_price?: number | null
+          created_at?: string | null
+          email?: string | null
+          general_remarks?: string | null
+          id?: string
+          internal_notes?: string | null
+          last_contact?: string | null
+          name: string
+          phone: string
+          selling_price?: number | null
+          size: Database["public"]["Enums"]["facility_size"]
+          status: Database["public"]["Enums"]["facility_status"]
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          buying_price?: number | null
+          created_at?: string | null
+          email?: string | null
+          general_remarks?: string | null
+          id?: string
+          internal_notes?: string | null
+          last_contact?: string | null
+          name?: string
+          phone?: string
+          selling_price?: number | null
+          size?: Database["public"]["Enums"]["facility_size"]
+          status?: Database["public"]["Enums"]["facility_status"]
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      facility_capabilities: {
+        Row: {
+          capability: string
+          created_at: string | null
+          facility_id: string | null
+          id: string
+        }
+        Insert: {
+          capability: string
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+        }
+        Update: {
+          capability?: string
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_capabilities_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facility_interactions: {
+        Row: {
+          created_at: string | null
+          facility_id: string | null
+          id: string
+          notes: string
+          type: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+          notes: string
+          type: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+          notes?: string
+          type?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_interactions_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facility_price_history: {
+        Row: {
+          buying_price: number | null
+          created_at: string | null
+          facility_id: string | null
+          id: string
+          selling_price: number | null
+          updated_by: string
+        }
+        Insert: {
+          buying_price?: number | null
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+          selling_price?: number | null
+          updated_by: string
+        }
+        Update: {
+          buying_price?: number | null
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+          selling_price?: number | null
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_price_history_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facility_status_history: {
+        Row: {
+          created_at: string | null
+          facility_id: string | null
+          from_status: Database["public"]["Enums"]["facility_status"]
+          id: string
+          reason: string
+          to_status: Database["public"]["Enums"]["facility_status"]
+          user_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          facility_id?: string | null
+          from_status: Database["public"]["Enums"]["facility_status"]
+          id?: string
+          reason: string
+          to_status: Database["public"]["Enums"]["facility_status"]
+          user_name: string
+        }
+        Update: {
+          created_at?: string | null
+          facility_id?: string | null
+          from_status?: Database["public"]["Enums"]["facility_status"]
+          id?: string
+          reason?: string
+          to_status?: Database["public"]["Enums"]["facility_status"]
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_status_history_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ports: {
         Row: {
           code: string
@@ -145,6 +336,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      facility_size: "Small" | "Medium" | "Large"
+      facility_status: "active" | "engaged" | "past" | "general"
       port_type: "ORIGIN" | "DESTINATION"
       shipping_line: "ZIM" | "HMM"
     }
