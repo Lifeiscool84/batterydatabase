@@ -337,7 +337,7 @@ export type Database = {
     }
     Enums: {
       facility_size: "Small" | "Medium" | "Large"
-      facility_status: "active" | "engaged" | "past" | "general"
+      facility_status: "Active" | "Engaged" | "No response" | "Declined"
       port_type: "ORIGIN" | "DESTINATION"
       shipping_line: "ZIM" | "HMM"
     }
