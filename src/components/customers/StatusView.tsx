@@ -21,12 +21,15 @@ interface Facility {
   internal_notes?: string;
 }
 
-const statusMapping = {
+type DbStatus = Facility["status"];
+type DisplayStatus = Status;
+
+const statusMapping: Record<DbStatus, DisplayStatus> = {
   "Active": "active",
   "Engaged": "engaged",
   "No response": "past",
   "Declined": "general"
-} as const;
+};
 
 interface StatusViewProps {
   location: Location;
@@ -65,7 +68,7 @@ export const StatusView = ({ location }: StatusViewProps) => {
   const mapFacilityToCardProps = (facility: Facility) => ({
     id: facility.id,
     name: facility.name,
-    status: statusMapping[facility.status] as Status,
+    status: statusMapping[facility.status],
     address: facility.address,
     phone: facility.phone,
     email: facility.email,
