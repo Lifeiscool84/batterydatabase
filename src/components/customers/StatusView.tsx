@@ -21,12 +21,12 @@ interface Facility {
   internal_notes?: string;
 }
 
-const statusMapping: Record<Facility['status'], Status> = {
+const statusMapping = {
   "Active": "active",
   "Engaged": "engaged",
   "No response": "past",
   "Declined": "general"
-};
+} as const;
 
 interface StatusViewProps {
   location: Location;
@@ -65,7 +65,7 @@ export const StatusView = ({ location }: StatusViewProps) => {
   const mapFacilityToCardProps = (facility: Facility) => ({
     id: facility.id,
     name: facility.name,
-    status: statusMapping[facility.status],
+    status: statusMapping[facility.status] as Status,
     address: facility.address,
     phone: facility.phone,
     email: facility.email,
