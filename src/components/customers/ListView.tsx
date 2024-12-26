@@ -127,19 +127,21 @@ export const ListView = ({ location }: ListViewProps) => {
 
       <div className="border rounded-md">
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="relative w-full">
-            <Table>
-              <FacilityTableHeader />
-              <TableBody>
-                {facilities.map((facility) => (
-                  <FacilityRow
-                    key={facility.id}
-                    facility={facility}
-                    onSave={handleCellChange}
-                  />
-                ))}
-              </TableBody>
-            </Table>
+          <div className="relative w-full overflow-auto">
+            <div className="min-w-max">
+              <Table>
+                <FacilityTableHeader />
+                <TableBody>
+                  {facilities.map((facility) => (
+                    <FacilityRow
+                      key={facility.id}
+                      facility={facility}
+                      onSave={handleCellChange}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </ScrollArea>
       </div>
