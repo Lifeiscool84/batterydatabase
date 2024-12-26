@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { FacilityCard } from "./FacilityCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -9,26 +8,28 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Location } from "@/pages/Customers";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FacilityNotes } from "./FacilityNotes";
 
 interface ListViewProps {
   location: Location;
 }
 
+const VALID_STATUSES = ["Active", "Engaged", "No response", "Declined"] as const;
+const VALID_SIZES = ["Small", "Medium", "Large"] as const;
+
 type Facility = {
   id: string;
   name: string;
-  status: "active" | "engaged" | "past" | "general";
+  status: typeof VALID_STATUSES[number];
   address: string;
   phone: string;
   email?: string;
   website?: string;
   buying_price?: number;
   selling_price?: number;
-  size: "Small" | "Medium" | "Large";
+  size: typeof VALID_SIZES[number];
+  notes?: string;
 };
-
-const VALID_STATUSES = ["active", "engaged", "past", "general"] as const;
-const VALID_SIZES = ["Small", "Medium", "Large"] as const;
 
 export const ListView = ({ location }: ListViewProps) => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -67,18 +68,7 @@ export const ListView = ({ location }: ListViewProps) => {
 
   const handleCellChange = async (id: string, field: keyof Facility, value: any) => {
     try {
-      // Validate status field
-      if (field === 'status' && !VALID_STATUSES.includes(value as any)) {
-        throw new Error(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`);
-      }
-
-      // Validate size field
-      if (field === 'size' && !VALID_SIZES.includes(value as any)) {
-        throw new Error(`Invalid size. Must be one of: ${VALID_SIZES.join(', ')}`);
-      }
-
-      // Validate numeric fields
-      if (field === 'buying_price' || field === 'selling_price') {
+      if (field === 'buying_price') {
         const numValue = Number(value);
         if (isNaN(numValue)) {
           throw new Error('Price must be a valid number');
@@ -97,10 +87,13 @@ export const ListView = ({ location }: ListViewProps) => {
         facility.id === id ? { ...facility, [field]: value } : facility
       ));
 
-      toast({
-        title: "Updated successfully",
-        description: `Updated ${field} for ${facilities.find(f => f.id === id)?.name}`,
-      });
+      // Only show toast for significant changes, not status updates
+      if (field !== 'status') {
+        toast({
+          title: "Updated successfully",
+          description: `Updated ${field} for ${facilities.find(f => f.id === id)?.name}`,
+        });
+      }
     } catch (error) {
       console.error('Error updating facility:', error);
       toast({
@@ -116,7 +109,7 @@ export const ListView = ({ location }: ListViewProps) => {
   const addNewRow = async () => {
     const newFacility = {
       name: "New Facility",
-      status: "general" as const,
+      status: "No response" as const,
       address: "",
       phone: "",
       size: "Medium" as const,
@@ -151,6 +144,17 @@ export const ListView = ({ location }: ListViewProps) => {
     const isEditing = editingCell?.id === facility.id && editingCell?.field === field;
 
     if (!isEditing) {
+      if (field === 'buying_price') {
+        return (
+          <div 
+            className="cursor-pointer hover:bg-muted/50 p-2"
+            onClick={() => handleCellClick(facility.id, field)}
+          >
+            {facility[field] ? `$${facility[field]}/lb` : ''}
+          </div>
+        );
+      }
+      
       return (
         <div 
           className="cursor-pointer hover:bg-muted/50 p-2"
@@ -173,7 +177,7 @@ export const ListView = ({ location }: ListViewProps) => {
           <SelectContent>
             {VALID_STATUSES.map((status) => (
               <SelectItem key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {status}
               </SelectItem>
             ))}
           </SelectContent>
@@ -198,6 +202,22 @@ export const ListView = ({ location }: ListViewProps) => {
             ))}
           </SelectContent>
         </Select>
+      );
+    }
+
+    if (field === 'notes') {
+      return (
+        <Input
+          autoFocus
+          className="min-w-[200px]"
+          defaultValue={facility[field]?.toString() || ''}
+          onBlur={(e) => handleCellChange(facility.id, field, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleCellChange(facility.id, field, e.currentTarget.value);
+            }
+          }}
+        />
       );
     }
 
@@ -236,14 +256,15 @@ export const ListView = ({ location }: ListViewProps) => {
               <TableHead>Size</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Website</TableHead>
-              <TableHead>Buying Price</TableHead>
+              <TableHead>Buying Price ($/lb)</TableHead>
               <TableHead>Selling Price</TableHead>
+              <TableHead className="min-w-[200px]">Notes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {facilities.map((facility) => (
               <TableRow key={facility.id}>
-                {(['name', 'status', 'address', 'phone', 'size', 'email', 'website', 'buying_price', 'selling_price'] as const).map((field) => (
+                {(['name', 'status', 'address', 'phone', 'size', 'email', 'website', 'buying_price', 'selling_price', 'notes'] as const).map((field) => (
                   <TableCell key={`${facility.id}-${field}`}>
                     {renderEditableCell(facility, field)}
                   </TableCell>
