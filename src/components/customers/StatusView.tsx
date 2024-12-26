@@ -3,12 +3,12 @@ import { FacilityCard } from "./FacilityCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Location } from "@/pages/Customers";
-import type { Status } from "./constants";
+import { DbStatus, DisplayStatus, statusMapping } from "./constants";
 
 interface Facility {
   id: string;
   name: string;
-  status: "Active" | "Engaged" | "No response" | "Declined";
+  status: DbStatus;
   address: string;
   phone: string;
   email?: string;
@@ -20,16 +20,6 @@ interface Facility {
   general_remarks?: string;
   internal_notes?: string;
 }
-
-type DbStatus = Facility["status"];
-type DisplayStatus = Status;
-
-const statusMapping: Record<DbStatus, DisplayStatus> = {
-  "Active": "active",
-  "Engaged": "engaged",
-  "No response": "past",
-  "Declined": "general"
-};
 
 interface StatusViewProps {
   location: Location;
