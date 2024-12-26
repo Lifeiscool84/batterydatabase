@@ -8,7 +8,7 @@ import type { Status } from "./constants";
 interface Facility {
   id: string;
   name: string;
-  status: Status;
+  status: "Active" | "Engaged" | "No response" | "Declined";
   address: string;
   phone: string;
   email?: string;
@@ -20,6 +20,13 @@ interface Facility {
   general_remarks?: string;
   internal_notes?: string;
 }
+
+const statusMapping = {
+  "Active": "active" as Status,
+  "Engaged": "engaged" as Status,
+  "No response": "past" as Status,
+  "Declined": "general" as Status,
+} as const;
 
 interface StatusViewProps {
   location: Location;
@@ -58,7 +65,7 @@ export const StatusView = ({ location }: StatusViewProps) => {
   const mapFacilityToCardProps = (facility: Facility) => ({
     id: facility.id,
     name: facility.name,
-    status: facility.status.toLowerCase() as Status,
+    status: statusMapping[facility.status],
     address: facility.address,
     phone: facility.phone,
     email: facility.email,
