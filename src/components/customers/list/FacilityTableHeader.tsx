@@ -13,7 +13,8 @@ export const FacilityTableHeader = () => {
         <TableHead>Website</TableHead>
         <TableHead>Buying Price ($/lb)</TableHead>
         <TableHead>Selling Price</TableHead>
-        <TableHead className="min-w-[200px]">Notes</TableHead>
+        <TableHead>General Remarks</TableHead>
+        <TableHead>Internal Notes</TableHead>
       </TableRow>
     </TableHeader>
   );

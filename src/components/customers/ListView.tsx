@@ -37,7 +37,8 @@ type Facility = {
   buying_price?: number;
   selling_price?: number;
   size: typeof VALID_SIZES[number]["value"];
-  notes?: string;
+  general_remarks?: string;
+  internal_notes?: string;
 };
 
 export const ListView = ({ location }: ListViewProps) => {
@@ -224,8 +225,16 @@ export const ListView = ({ location }: ListViewProps) => {
                     </TableCell>
                     <TableCell>
                       <EditableCell
-                        value={facility.notes}
-                        field="notes"
+                        value={facility.general_remarks}
+                        field="general_remarks"
+                        facilityId={facility.id}
+                        onSave={handleCellChange}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        value={facility.internal_notes}
+                        field="internal_notes"
                         facilityId={facility.id}
                         onSave={handleCellChange}
                       />
