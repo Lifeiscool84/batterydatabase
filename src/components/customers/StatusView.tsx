@@ -55,6 +55,21 @@ export const StatusView = ({ location }: StatusViewProps) => {
     }
   };
 
+  const mapFacilityToCardProps = (facility: Facility) => ({
+    id: facility.id,
+    name: facility.name,
+    status: facility.status.toLowerCase() as Status,
+    address: facility.address,
+    phone: facility.phone,
+    email: facility.email,
+    website: facility.website,
+    buyingPrice: facility.buying_price,
+    sellingPrice: facility.selling_price,
+    lastContact: facility.last_contact || 'No contact recorded',
+    size: facility.size,
+    remarks: facility.general_remarks,
+  });
+
   const activePartners = facilities.filter(f => f.status === "Active");
   const engagedProspects = facilities.filter(f => f.status === "Engaged");
   const noResponseContacts = facilities.filter(f => f.status === "No response");
@@ -68,7 +83,10 @@ export const StatusView = ({ location }: StatusViewProps) => {
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {activePartners.map(facility => (
-            <FacilityCard key={facility.id} facility={facility} />
+            <FacilityCard 
+              key={facility.id} 
+              facility={mapFacilityToCardProps(facility)} 
+            />
           ))}
         </div>
       </section>
@@ -79,7 +97,10 @@ export const StatusView = ({ location }: StatusViewProps) => {
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {engagedProspects.map(facility => (
-            <FacilityCard key={facility.id} facility={facility} />
+            <FacilityCard 
+              key={facility.id} 
+              facility={mapFacilityToCardProps(facility)} 
+            />
           ))}
         </div>
       </section>
@@ -90,7 +111,10 @@ export const StatusView = ({ location }: StatusViewProps) => {
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {noResponseContacts.map(facility => (
-            <FacilityCard key={facility.id} facility={facility} />
+            <FacilityCard 
+              key={facility.id} 
+              facility={mapFacilityToCardProps(facility)} 
+            />
           ))}
         </div>
       </section>
@@ -101,7 +125,10 @@ export const StatusView = ({ location }: StatusViewProps) => {
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {declinedContacts.map(facility => (
-            <FacilityCard key={facility.id} facility={facility} />
+            <FacilityCard 
+              key={facility.id} 
+              facility={mapFacilityToCardProps(facility)} 
+            />
           ))}
         </div>
       </section>
