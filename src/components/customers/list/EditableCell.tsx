@@ -55,9 +55,9 @@ export const EditableCell = ({
       }}
       onBlur={(e) => onSave(facilityId, field, e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' && e.shiftKey) {
-          e.preventDefault();
-          onSave(facilityId, field, e.currentTarget.value);
+        if (e.key === 'Enter' && !e.shiftKey) {
+          // Allow line breaks with Enter
+          return;
         }
       }}
     />
