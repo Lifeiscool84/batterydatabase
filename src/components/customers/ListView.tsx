@@ -9,7 +9,6 @@ import type { Location } from "@/pages/Customers";
 import { FacilityTableHeader } from "./list/FacilityTableHeader";
 import { FacilityRow } from "./list/FacilityRow";
 import { Status, Size } from "./constants";
-import { BackButton } from "@/components/layout/BackButton";
 
 interface ListViewProps {
   location: Location;
@@ -119,10 +118,7 @@ export const ListView = ({ location }: ListViewProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <BackButton />
-          <h2 className="text-xl font-semibold">Facilities in {location}</h2>
-        </div>
+        <h2 className="text-xl font-semibold">Facilities in {location}</h2>
         <Button onClick={addNewRow}>
           <Plus className="mr-2 h-4 w-4" />
           Add Facility

@@ -8,6 +8,7 @@ import { ListView } from "@/components/customers/ListView";
 import { MapView } from "@/components/customers/MapView";
 import { FacilityImporter } from "@/components/customers/FacilityImporter";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { BackButton } from "@/components/layout/BackButton";
 
 export type Location = "Houston" | "New York/New Jersey" | "Seattle" | "Mobile" | "Los Angeles";
 export type Status = "active" | "engaged" | "past" | "general";
@@ -19,7 +20,10 @@ const Customers = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Customer Management</h1>
+        <div className="flex items-center gap-4">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Customer Management</h1>
+        </div>
         <Dialog>
           <DialogTrigger asChild>
             <Button>

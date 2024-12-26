@@ -25,6 +25,7 @@ export const FacilityCell = ({
     <TableCell className={cn(
       "p-2 align-top whitespace-normal break-words", 
       type === "select" && "min-w-[120px]",
+      field === "address" && "min-w-[250px]",
       field === "general_remarks" && "min-w-[300px]",
       field === "internal_notes" && "min-w-[300px]",
       className
