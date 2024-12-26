@@ -1,19 +1,19 @@
 import { TableRow } from "@/components/ui/table";
 import { FacilityCell } from "./FacilityCell";
-import { VALID_STATUSES, VALID_SIZES } from "../constants";
+import { VALID_STATUSES, VALID_SIZES, Status, Size } from "../constants";
 
 interface FacilityRowProps {
   facility: {
     id: string;
     name: string;
-    status: string;
+    status: Status;
     address: string;
     phone: string;
     email?: string;
     website?: string;
     buying_price?: number;
     selling_price?: number;
-    size: string;
+    size: Size;
     general_remarks?: string;
     internal_notes?: string;
   };

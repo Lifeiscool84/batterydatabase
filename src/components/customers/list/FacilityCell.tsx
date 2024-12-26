@@ -8,7 +8,7 @@ interface FacilityCellProps {
   facilityId: string;
   onSave: (id: string, field: string, value: any) => void;
   type?: "text" | "select" | "number";
-  options?: { value: string; label: string }[];
+  options?: readonly { value: string; label: string; }[];
   className?: string;
 }
 
