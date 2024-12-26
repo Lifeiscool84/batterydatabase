@@ -23,7 +23,7 @@ export const FacilityCell = ({
 }: FacilityCellProps) => {
   return (
     <TableCell className={cn(
-      "min-w-[150px] max-w-none whitespace-normal break-words", 
+      "p-2 align-top whitespace-normal break-words", 
       type === "select" && "min-w-[120px]",
       field === "general_remarks" && "min-w-[300px]",
       field === "internal_notes" && "min-w-[300px]",

@@ -42,7 +42,8 @@ export const EditableCell = ({
     <Input
       type={type}
       defaultValue={value?.toString() || ''}
-      className="w-full min-h-[40px]"
+      className="w-full min-h-[40px] whitespace-normal break-words resize-y overflow-hidden"
+      style={{ height: 'auto' }}
       onBlur={(e) => onSave(facilityId, field, e.target.value)}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
