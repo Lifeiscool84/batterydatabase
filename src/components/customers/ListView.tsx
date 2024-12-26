@@ -115,19 +115,20 @@ export const ListView = ({ location }: ListViewProps) => {
     }
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Facilities in {location}</h2>
-        <Button onClick={addNewRow}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Facility
-        </Button>
-      </div>
+  // Group facilities by status
+  const activePartners = facilities.filter(f => f.status === "active");
+  const engagedProspects = facilities.filter(f => f.status === "engaged");
+  const pastContacts = facilities.filter(f => f.status === "past");
+  const generalContacts = facilities.filter(f => f.status === "general");
 
+  const renderFacilityGroup = (facilities: Facility[], title: string, textColorClass: string) => (
+    <section className="space-y-4">
+      <h2 className={`text-xl font-semibold ${textColorClass}`}>
+        {title} ({facilities.length})
+      </h2>
       <div className="border rounded-md">
-        <ScrollArea className="h-[calc(100vh-300px)] w-full" type="scroll">
-          <div className="min-w-[1200px] w-full">
+        <ScrollArea className="w-full" type="scroll">
+          <div className="min-w-[1200px]">
             <Table>
               <FacilityTableHeader />
               <TableBody>
@@ -143,6 +144,23 @@ export const ListView = ({ location }: ListViewProps) => {
           </div>
         </ScrollArea>
       </div>
+    </section>
+  );
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Facilities in {location}</h2>
+        <Button onClick={addNewRow}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Facility
+        </Button>
+      </div>
+
+      {renderFacilityGroup(activePartners, "Active Partners", "text-success")}
+      {renderFacilityGroup(engagedProspects, "Engaged Prospects", "text-warning")}
+      {renderFacilityGroup(pastContacts, "Past Contacts", "text-danger")}
+      {renderFacilityGroup(generalContacts, "General Contacts", "text-muted-foreground")}
     </div>
   );
 };
