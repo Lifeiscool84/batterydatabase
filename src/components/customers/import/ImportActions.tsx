@@ -35,11 +35,6 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
 
       if (error) throw error;
 
-      toast({
-        title: "Import successful",
-        description: `Imported ${data.length} facilities`,
-      });
-
       onSuccess();
     } catch (error) {
       console.error('Import error:', error);

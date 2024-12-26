@@ -5,7 +5,7 @@ const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  status: z.enum(["active", "engaged", "past", "general"]).default("general"),
+  status: z.enum(["Active", "Engaged", "No response", "Declined"]).default("No response"),
   address: z.string().min(1, "Address is required"),
   phone: z.string().regex(phoneRegex, "Phone must be in format (XXX) XXX-XXXX"),
   size: z.enum(["Small", "Medium", "Large"]).default("Medium"),
@@ -32,7 +32,7 @@ export const validateImportData = (data: any[]): {
       // Process the data before validation
       const processedRow = {
         ...row,
-        status: row.status?.toLowerCase() || 'general',
+        status: mapOldStatusToNew(row.status?.toLowerCase() || 'general'),
         size: row.size || 'Medium',
         // Convert string numbers to actual numbers
         buying_price: row.buying_price ? Number(row.buying_price) : null,
@@ -49,4 +49,15 @@ export const validateImportData = (data: any[]): {
   });
 
   return { validData, errors };
+};
+
+// Helper function to map old status values to new ones
+const mapOldStatusToNew = (oldStatus: string): "Active" | "Engaged" | "No response" | "Declined" => {
+  const statusMap: Record<string, "Active" | "Engaged" | "No response" | "Declined"> = {
+    'active': 'Active',
+    'engaged': 'Engaged',
+    'past': 'No response',
+    'general': 'No response'
+  };
+  return statusMap[oldStatus] || 'No response';
 };
