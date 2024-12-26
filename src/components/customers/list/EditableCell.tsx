@@ -39,14 +39,24 @@ export const EditableCell = ({
   }
 
   return (
-    <Input
-      type={type}
+    <textarea
       defaultValue={value?.toString() || ''}
-      className="w-full min-h-[40px] whitespace-normal break-words resize-y overflow-hidden"
-      style={{ height: 'auto' }}
+      className="w-full min-h-[40px] p-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      style={{ 
+        resize: 'none',
+        overflow: 'hidden',
+        height: 'auto'
+      }}
+      rows={1}
+      onInput={(e) => {
+        // Auto-resize the textarea
+        e.currentTarget.style.height = 'auto';
+        e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
+      }}
       onBlur={(e) => onSave(facilityId, field, e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
           onSave(facilityId, field, e.currentTarget.value);
         }
       }}
