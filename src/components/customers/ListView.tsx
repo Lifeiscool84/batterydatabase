@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Location } from "@/pages/Customers";
 import { FacilityTableHeader } from "./list/FacilityTableHeader";
 import { FacilityRow } from "./list/FacilityRow";
+import { Status, Size } from "./constants";
 
 interface ListViewProps {
   location: Location;
@@ -16,14 +17,14 @@ interface ListViewProps {
 type Facility = {
   id: string;
   name: string;
-  status: string;
+  status: Status;
   address: string;
   phone: string;
   email?: string;
   website?: string;
   buying_price?: number;
   selling_price?: number;
-  size: string;
+  size: Size;
   general_remarks?: string;
   internal_notes?: string;
 };
@@ -83,10 +84,10 @@ export const ListView = ({ location }: ListViewProps) => {
   const addNewRow = async () => {
     const newFacility = {
       name: "New Facility",
-      status: "No response",
+      status: "No response" as Status,
       address: "",
       phone: "",
-      size: "Medium",
+      size: "Medium" as Size,
     };
 
     try {
