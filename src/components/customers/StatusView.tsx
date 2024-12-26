@@ -21,12 +21,12 @@ interface Facility {
   internal_notes?: string;
 }
 
-const statusMapping = {
-  "Active": "active" as Status,
-  "Engaged": "engaged" as Status,
-  "No response": "past" as Status,
-  "Declined": "general" as Status,
-} as const;
+const statusMapping: Record<Facility['status'], Status> = {
+  "Active": "active",
+  "Engaged": "engaged",
+  "No response": "past",
+  "Declined": "general"
+};
 
 interface StatusViewProps {
   location: Location;
