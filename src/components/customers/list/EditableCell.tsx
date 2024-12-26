@@ -24,7 +24,7 @@ export const EditableCell = ({
         defaultValue={value}
         onValueChange={(value) => onSave(facilityId, field, value)}
       >
-        <SelectTrigger>
+        <SelectTrigger className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -42,6 +42,7 @@ export const EditableCell = ({
     <Input
       type={type}
       defaultValue={value?.toString() || ''}
+      className="w-full truncate"
       onBlur={(e) => onSave(facilityId, field, e.target.value)}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {

@@ -1,42 +1,29 @@
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Location } from "@/pages/Customers";
 import { FacilityTableHeader } from "./list/FacilityTableHeader";
-import { EditableCell } from "./list/EditableCell";
+import { FacilityRow } from "./list/FacilityRow";
 
 interface ListViewProps {
   location: Location;
 }
 
-const VALID_STATUSES = [
-  { value: "Active", label: "Active" },
-  { value: "Engaged", label: "Engaged" },
-  { value: "No response", label: "No response" },
-  { value: "Declined", label: "Declined" }
-];
-
-const VALID_SIZES = [
-  { value: "Small", label: "Small" },
-  { value: "Medium", label: "Medium" },
-  { value: "Large", label: "Large" }
-];
-
 type Facility = {
   id: string;
   name: string;
-  status: typeof VALID_STATUSES[number]["value"];
+  status: string;
   address: string;
   phone: string;
   email?: string;
   website?: string;
   buying_price?: number;
   selling_price?: number;
-  size: typeof VALID_SIZES[number]["value"];
+  size: string;
   general_remarks?: string;
   internal_notes?: string;
 };
@@ -96,10 +83,10 @@ export const ListView = ({ location }: ListViewProps) => {
   const addNewRow = async () => {
     const newFacility = {
       name: "New Facility",
-      status: "No response" as const,
+      status: "No response",
       address: "",
       phone: "",
-      size: "Medium" as const,
+      size: "Medium",
     };
 
     try {
@@ -139,107 +126,16 @@ export const ListView = ({ location }: ListViewProps) => {
 
       <div className="border rounded-md">
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="overflow-x-auto">
+          <div className="relative w-full">
             <Table>
               <FacilityTableHeader />
               <TableBody>
                 {facilities.map((facility) => (
-                  <TableRow key={facility.id}>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.name}
-                        field="name"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.status}
-                        field="status"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                        type="select"
-                        options={VALID_STATUSES}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.address}
-                        field="address"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.phone}
-                        field="phone"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.size}
-                        field="size"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                        type="select"
-                        options={VALID_SIZES}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.email}
-                        field="email"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.website}
-                        field="website"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.buying_price}
-                        field="buying_price"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                        type="number"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.selling_price}
-                        field="selling_price"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                        type="number"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.general_remarks}
-                        field="general_remarks"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EditableCell
-                        value={facility.internal_notes}
-                        field="internal_notes"
-                        facilityId={facility.id}
-                        onSave={handleCellChange}
-                      />
-                    </TableCell>
-                  </TableRow>
+                  <FacilityRow
+                    key={facility.id}
+                    facility={facility}
+                    onSave={handleCellChange}
+                  />
                 ))}
               </TableBody>
             </Table>
