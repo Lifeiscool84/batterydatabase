@@ -12,50 +12,52 @@ import Customers from "@/pages/Customers";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public route - accessible without authentication */}
-            <Route path="/login" element={<Login />} />
-            
-            {/* Protected routes - require authentication */}
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/shipping-schedules"
-              element={
-                <ProtectedRoute>
-                  <ShippingSchedules />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/customers"
-              element={
-                <ProtectedRoute>
-                  <Customers />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Catch all route - redirect to dashboard */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public route - accessible without authentication */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* Protected routes - require authentication */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/shipping-schedules"
+                element={
+                  <ProtectedRoute>
+                    <ShippingSchedules />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/customers"
+                element={
+                  <ProtectedRoute>
+                    <Customers />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Catch all route - redirect to dashboard */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </TooltipProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
