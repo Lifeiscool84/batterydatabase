@@ -29,7 +29,7 @@ export const FacilityCell = ({
       field === "general_remarks" && "min-w-[300px]",
       field === "internal_notes" && "min-w-[300px]",
       field === "email" && "min-w-[200px]",
-      field === "website" && "min-w-[200px]",
+      field === "website" && "min-w-[300px]",
       field === "phone" && "min-w-[150px]",
       className
     )}>

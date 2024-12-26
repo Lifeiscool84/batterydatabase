@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EditableCellProps {
@@ -17,6 +18,20 @@ export const EditableCell = ({
   type = "text",
   options = []
 }: EditableCellProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const adjustHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  // Adjust height on initial render and when value changes
+  useEffect(() => {
+    adjustHeight();
+  }, [value]);
+
   if (type === "select" && options.length > 0) {
     return (
       <Select
@@ -39,22 +54,25 @@ export const EditableCell = ({
 
   return (
     <textarea
+      ref={textareaRef}
       defaultValue={value?.toString() || ''}
-      className="w-full min-h-[40px] p-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 whitespace-pre-wrap break-words overflow-hidden"
+      className="w-full min-h-[40px] p-2 rounded-md border border-input bg-background text-sm 
+                ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none 
+                focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
+                whitespace-pre-wrap break-words resize-none"
       style={{ 
-        resize: 'none',
-        overflow: 'hidden',
         height: 'auto',
         width: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        minHeight: '40px',
+        overflowY: 'hidden'
       }}
       rows={1}
-      onInput={(e) => {
-        // Auto-resize the textarea
-        e.currentTarget.style.height = 'auto';
-        e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+      onInput={adjustHeight}
+      onBlur={(e) => {
+        onSave(facilityId, field, e.target.value);
+        adjustHeight();
       }}
-      onBlur={(e) => onSave(facilityId, field, e.target.value)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
@@ -64,9 +82,7 @@ export const EditableCell = ({
           e.currentTarget.value = textBeforeCursor + '\n' + textAfterCursor;
           e.currentTarget.selectionStart = cursorPosition + 1;
           e.currentTarget.selectionEnd = cursorPosition + 1;
-          // Trigger the auto-resize
-          e.currentTarget.style.height = 'auto';
-          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+          adjustHeight();
         }
       }}
     />
