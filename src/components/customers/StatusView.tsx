@@ -1,74 +1,64 @@
+import { useState, useEffect } from "react";
 import { FacilityCard } from "./FacilityCard";
-import type { Location, Status } from "@/pages/Customers";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import type { Location } from "@/pages/Customers";
+import type { Status } from "./constants";
 
-const mockFacilities = [
-  {
-    id: "1",
-    name: "Houston Metal Recycling",
-    status: "active" as Status,
-    address: "123 Industrial Blvd, Houston, TX",
-    phone: "(713) 555-0123",
-    email: "contact@houstonmetal.com",
-    website: "houstonmetal.com",
-    buyingPrice: 250,
-    sellingPrice: 300,
-    lastContact: "2024-03-15",
-    size: "Large" as const,
-    remarks: "Premium partner, weekly collections"
-  },
-  {
-    id: "2",
-    name: "Gulf Coast Recyclers",
-    status: "engaged" as Status,
-    address: "456 Port Avenue, Houston, TX",
-    phone: "(713) 555-0456",
-    email: "info@gulfcoastrecyclers.com",
-    website: "gulfcoastrecyclers.com",
-    buyingPrice: 245,
-    sellingPrice: 295,
-    lastContact: "2024-03-10",
-    size: "Medium" as const,
-    remarks: "Negotiating contract terms"
-  },
-  {
-    id: "3",
-    name: "Texas Scrap Solutions",
-    status: "past" as Status,
-    address: "789 Industrial Park, Houston, TX",
-    phone: "(713) 555-0789",
-    email: "contact@texasscrap.com",
-    website: "texasscrap.com",
-    buyingPrice: 240,
-    sellingPrice: 290,
-    lastContact: "2024-02-15",
-    size: "Small" as const,
-    remarks: "Previous partner, maintain contact"
-  },
-  {
-    id: "4",
-    name: "Metro Metals",
-    status: "general" as Status,
-    address: "321 Commerce St, Houston, TX",
-    phone: "(713) 555-0321",
-    email: "info@metrometals.com",
-    website: "metrometals.com",
-    buyingPrice: 235,
-    sellingPrice: 285,
-    lastContact: "2024-01-20",
-    size: "Medium" as const,
-    remarks: "Initial contact made"
-  }
-];
+interface Facility {
+  id: string;
+  name: string;
+  status: Status;
+  address: string;
+  phone: string;
+  email?: string;
+  website?: string;
+  buying_price?: number;
+  selling_price?: number;
+  last_contact?: string;
+  size: "Small" | "Medium" | "Large";
+  general_remarks?: string;
+  internal_notes?: string;
+}
 
 interface StatusViewProps {
   location: Location;
 }
 
 export const StatusView = ({ location }: StatusViewProps) => {
-  const activePartners = mockFacilities.filter(f => f.status === "active");
-  const engagedProspects = mockFacilities.filter(f => f.status === "engaged");
-  const pastContacts = mockFacilities.filter(f => f.status === "past");
-  const generalContacts = mockFacilities.filter(f => f.status === "general");
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchFacilities();
+  }, [location]);
+
+  const fetchFacilities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('facilities')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setFacilities(data || []);
+    } catch (error) {
+      console.error('Error fetching facilities:', error);
+      toast({
+        title: "Error fetching facilities",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const activePartners = facilities.filter(f => f.status === "Active");
+  const engagedProspects = facilities.filter(f => f.status === "Engaged");
+  const noResponseContacts = facilities.filter(f => f.status === "No response");
+  const declinedContacts = facilities.filter(f => f.status === "Declined");
 
   return (
     <div className="space-y-8">
@@ -96,10 +86,10 @@ export const StatusView = ({ location }: StatusViewProps) => {
 
       <section>
         <h2 className="text-xl font-semibold mb-4 text-danger">
-          Past Contacts ({pastContacts.length})
+          No Response ({noResponseContacts.length})
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {pastContacts.map(facility => (
+          {noResponseContacts.map(facility => (
             <FacilityCard key={facility.id} facility={facility} />
           ))}
         </div>
@@ -107,10 +97,10 @@ export const StatusView = ({ location }: StatusViewProps) => {
 
       <section>
         <h2 className="text-xl font-semibold mb-4 text-muted-foreground">
-          General Contacts ({generalContacts.length})
+          Declined ({declinedContacts.length})
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {generalContacts.map(facility => (
+          {declinedContacts.map(facility => (
             <FacilityCard key={facility.id} facility={facility} />
           ))}
         </div>
