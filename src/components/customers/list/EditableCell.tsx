@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EditableCellProps {
@@ -41,23 +40,33 @@ export const EditableCell = ({
   return (
     <textarea
       defaultValue={value?.toString() || ''}
-      className="w-full min-h-[40px] p-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="w-full min-h-[40px] p-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 whitespace-pre-wrap break-words overflow-hidden"
       style={{ 
         resize: 'none',
         overflow: 'hidden',
-        height: 'auto'
+        height: 'auto',
+        width: '100%',
+        boxSizing: 'border-box'
       }}
       rows={1}
       onInput={(e) => {
         // Auto-resize the textarea
         e.currentTarget.style.height = 'auto';
-        e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
+        e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
       }}
       onBlur={(e) => onSave(facilityId, field, e.target.value)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
-          // Allow line breaks with Enter
-          return;
+          e.preventDefault();
+          const cursorPosition = e.currentTarget.selectionStart;
+          const textBeforeCursor = e.currentTarget.value.substring(0, cursorPosition);
+          const textAfterCursor = e.currentTarget.value.substring(cursorPosition);
+          e.currentTarget.value = textBeforeCursor + '\n' + textAfterCursor;
+          e.currentTarget.selectionStart = cursorPosition + 1;
+          e.currentTarget.selectionEnd = cursorPosition + 1;
+          // Trigger the auto-resize
+          e.currentTarget.style.height = 'auto';
+          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
         }
       }}
     />
