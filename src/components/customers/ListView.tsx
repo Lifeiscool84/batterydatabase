@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Location } from "@/pages/Customers";
 import { FacilityTableHeader } from "./list/FacilityTableHeader";
 import { FacilityRow } from "./list/FacilityRow";
-import { Status, Size } from "./constants";
+import { DbStatus, Size } from "./constants";
 
 interface ListViewProps {
   location: Location;
@@ -17,7 +17,7 @@ interface ListViewProps {
 type Facility = {
   id: string;
   name: string;
-  status: Status;
+  status: DbStatus;
   address: string;
   phone: string;
   email?: string;
@@ -84,7 +84,7 @@ export const ListView = ({ location }: ListViewProps) => {
   const addNewRow = async () => {
     const newFacility = {
       name: "New Facility",
-      status: "No response" as Status,
+      status: "No response" as DbStatus,
       address: "",
       phone: "",
       size: "Medium" as Size,
