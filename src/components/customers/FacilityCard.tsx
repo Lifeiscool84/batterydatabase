@@ -8,28 +8,7 @@ import { FacilityHeader } from "./facility-card/FacilityHeader";
 import { FacilityContact } from "./facility-card/FacilityContact";
 import { FacilityPricing } from "./facility-card/FacilityPricing";
 import { FacilityActions } from "./facility-card/FacilityActions";
-
-interface PriceHistory {
-  date: string;
-  buyingPrice: number;
-  sellingPrice: number;
-  updatedBy: string;
-}
-
-interface Interaction {
-  date: string;
-  type: string;
-  notes: string;
-  user: string;
-}
-
-interface StatusHistory {
-  date: string;
-  from: string;
-  to: string;
-  reason: string;
-  user: string;
-}
+import type { PriceHistory, Interaction, StatusHistory } from "./types";
 
 interface FacilityCardProps {
   facility: {

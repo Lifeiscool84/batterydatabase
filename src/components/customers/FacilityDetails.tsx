@@ -2,34 +2,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { Building2, DollarSign, History, MessageSquare, User } from "lucide-react";
-
-interface PriceHistory {
-  date: string;
-  buyingPrice: number;
-  sellingPrice: number;
-  updatedBy: string;
-}
-
-interface Interaction {
-  date: string;
-  type: "call" | "email" | "meeting" | "other";
-  notes: string;
-  user: string;
-}
-
-interface StatusChange {
-  date: string;
-  from: string;
-  to: string;
-  reason: string;
-  user: string;
-}
+import type { PriceHistory, Interaction, StatusHistory } from "./types";
 
 interface FacilityDetailsProps {
   facilityId: string;
   priceHistory: PriceHistory[];
   interactions: Interaction[];
-  statusHistory: StatusChange[];
+  statusHistory: StatusHistory[];
   capabilities: string[];
   notes: string;
 }
