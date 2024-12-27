@@ -43,7 +43,7 @@ export const FacilityDetails = ({
   notes
 }: FacilityDetailsProps) => {
   return (
-    <div className="p-4 space-y-4 bg-muted/30">
+    <div className="p-4 space-y-4 bg-muted/30 rounded-md">
       <Tabs defaultValue="interactions" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="interactions" className="flex items-center gap-2">
@@ -66,34 +66,38 @@ export const FacilityDetails = ({
 
         <TabsContent value="interactions" className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
-            <div className="space-y-4">
-              {interactions.map((interaction, index) => (
-                <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
-                  <div className="flex-1">
+            {interactions.length === 0 ? (
+              <div className="text-center text-muted-foreground">No interactions recorded</div>
+            ) : (
+              <div className="space-y-4">
+                {interactions.map((interaction, index) => (
+                  <div key={index} className="flex flex-col gap-2 pb-4 border-b last:border-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">{interaction.type}</span>
+                      <span className="font-medium capitalize">{interaction.type}</span>
                       <span className="text-sm text-muted-foreground">
                         {format(new Date(interaction.date), "PPp")}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm">{interaction.notes}</p>
-                    <div className="mt-2 flex items-center text-sm text-muted-foreground">
+                    <p className="text-sm">{interaction.notes}</p>
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <User className="h-3 w-3 mr-1" />
                       {interaction.user}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </ScrollArea>
         </TabsContent>
 
         <TabsContent value="prices" className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
-            <div className="space-y-4">
-              {priceHistory.map((price, index) => (
-                <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
-                  <div className="flex-1">
+            {priceHistory.length === 0 ? (
+              <div className="text-center text-muted-foreground">No price history available</div>
+            ) : (
+              <div className="space-y-4">
+                {priceHistory.map((price, index) => (
+                  <div key={index} className="flex flex-col gap-2 pb-4 border-b last:border-0">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <div className="text-sm">
@@ -107,27 +111,31 @@ export const FacilityDetails = ({
                         {format(new Date(price.date), "PPp")}
                       </span>
                     </div>
-                    <div className="mt-2 flex items-center text-sm text-muted-foreground">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <User className="h-3 w-3 mr-1" />
                       {price.updatedBy}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </ScrollArea>
         </TabsContent>
 
         <TabsContent value="capabilities" className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
-            <div className="space-y-2">
-              {capabilities.map((capability, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <span>{capability}</span>
-                </div>
-              ))}
-            </div>
+            {capabilities.length === 0 ? (
+              <div className="text-center text-muted-foreground">No capabilities listed</div>
+            ) : (
+              <div className="space-y-2">
+                {capabilities.map((capability, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    <span>{capability}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </ScrollArea>
         </TabsContent>
 
