@@ -9,6 +9,28 @@ import { FacilityContact } from "./facility-card/FacilityContact";
 import { FacilityPricing } from "./facility-card/FacilityPricing";
 import { FacilityActions } from "./facility-card/FacilityActions";
 
+interface PriceHistory {
+  date: string;
+  buyingPrice: number;
+  sellingPrice: number;
+  updatedBy: string;
+}
+
+interface Interaction {
+  date: string;
+  type: string;
+  notes: string;
+  user: string;
+}
+
+interface StatusHistory {
+  date: string;
+  from: string;
+  to: string;
+  reason: string;
+  user: string;
+}
+
 interface FacilityCardProps {
   facility: {
     id: string;
@@ -23,6 +45,10 @@ interface FacilityCardProps {
     lastContact: string;
     size: "Small" | "Medium" | "Large";
     remarks?: string;
+    priceHistory: PriceHistory[];
+    interactions: Interaction[];
+    statusHistory: StatusHistory[];
+    capabilities: string[];
   };
 }
 
@@ -71,10 +97,10 @@ export const FacilityCard = ({ facility }: FacilityCardProps) => {
           <CollapsibleContent className="mt-4">
             <FacilityDetails
               facilityId={facility.id}
-              priceHistory={[]}
-              interactions={[]}
-              statusHistory={[]}
-              capabilities={[]}
+              priceHistory={facility.priceHistory}
+              interactions={facility.interactions}
+              statusHistory={facility.statusHistory}
+              capabilities={facility.capabilities}
               notes={facility.remarks || "No additional notes."}
             />
           </CollapsibleContent>
