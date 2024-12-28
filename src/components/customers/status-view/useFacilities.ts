@@ -6,7 +6,7 @@ import { statusMapping } from "../constants";
 import type { InteractionType } from "../types";
 import type { DbFacility, MappedFacility, FacilityGroups } from "./types";
 
-// Helper function to validate interaction type
+// Helper function to validate interaction type with proper type guard
 const validateInteractionType = (type: string): InteractionType => {
   const validTypes = ["call", "email", "meeting", "other"] as const;
   return validTypes.includes(type as InteractionType) 
@@ -75,7 +75,7 @@ export const useFacilities = (location: Location) => {
           })) || [],
           interactions: interactions?.map(int => ({
             date: int.created_at,
-            type: validateInteractionType(int.type),
+            type: validateInteractionType(int.type), // Using the validation function here
             notes: int.notes,
             user: int.user_name
           })) || [],
