@@ -1,5 +1,5 @@
 import type { Status } from "@/pages/Customers";
-import type { PriceHistory, Interaction, StatusHistory } from "../types";
+import type { PriceHistory, InteractionType, StatusHistory } from "../types";
 
 export interface DbFacility {
   id: string;
@@ -35,6 +35,13 @@ export interface DbFacility {
     user: string;
   }[];
   capabilities?: string[];
+}
+
+export interface Interaction {
+  date: string;
+  type: InteractionType;
+  notes: string;
+  user: string;
 }
 
 export interface MappedFacility {

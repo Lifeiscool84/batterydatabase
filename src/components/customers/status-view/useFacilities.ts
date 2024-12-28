@@ -83,7 +83,7 @@ export const useFacilities = (location: Location) => {
             type: getValidInteractionType(int.type),
             notes: int.notes,
             user: int.user_name
-          } as Interaction)) || [],
+          })) || [],
           status_history: statusHistory?.map(sh => ({
             date: sh.created_at,
             from: sh.from_status,
