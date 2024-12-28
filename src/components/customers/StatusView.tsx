@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Location } from "@/pages/Customers";
 import { DbStatus, DisplayStatus, statusMapping } from "./constants";
+import type { InteractionType } from "./types";
 
 interface Facility {
   id: string;
@@ -44,6 +45,14 @@ interface Facility {
 interface StatusViewProps {
   location: Location;
 }
+
+// Helper function to validate interaction type
+const validateInteractionType = (type: string): InteractionType => {
+  const validTypes: InteractionType[] = ["call", "email", "meeting", "other"];
+  return validTypes.includes(type as InteractionType) 
+    ? (type as InteractionType) 
+    : "other";
+};
 
 export const StatusView = ({ location }: StatusViewProps) => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -103,7 +112,7 @@ export const StatusView = ({ location }: StatusViewProps) => {
           })) || [],
           interactions: interactions?.map(int => ({
             date: int.created_at,
-            type: int.type,
+            type: validateInteractionType(int.type),
             notes: int.notes,
             user: int.user_name
           })) || [],
