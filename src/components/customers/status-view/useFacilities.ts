@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Location } from "@/pages/Customers";
 import { statusMapping } from "../constants";
 import type { InteractionType } from "../types";
-import type { DbFacility, MappedFacility, FacilityGroups, Interaction } from "./types";
+import type { DbFacility, MappedFacility, FacilityGroups } from "./types";
 
 // Type guard function to validate interaction type
 function isValidInteractionType(type: string): type is InteractionType {
