@@ -8,7 +8,7 @@ import type { DbFacility, MappedFacility, FacilityGroups } from "./types";
 
 // Helper function to validate interaction type
 const validateInteractionType = (type: string): InteractionType => {
-  const validTypes: InteractionType[] = ["call", "email", "meeting", "other"];
+  const validTypes = ["call", "email", "meeting", "other"] as const;
   return validTypes.includes(type as InteractionType) 
     ? (type as InteractionType) 
     : "other";
