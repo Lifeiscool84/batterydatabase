@@ -4,6 +4,7 @@ import { ImportActions } from "./import/ImportActions";
 import { FileUpload } from "./import/FileUpload";
 import { useImportData } from "./import/useImportData";
 import { useToast } from "@/hooks/use-toast";
+import { DialogDescription } from "@/components/ui/dialog";
 
 export const FacilityImporter = () => {
   const { rawData, preview, errors, processData, resetData } = useImportData();
@@ -13,7 +14,7 @@ export const FacilityImporter = () => {
     resetData();
     toast({
       title: "Import completed",
-      description: "Facilities have been successfully imported",
+      description: `${preview.length} facilities have been successfully imported`,
     });
   };
 
@@ -21,6 +22,9 @@ export const FacilityImporter = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Import Facilities</CardTitle>
+        <DialogDescription>
+          Upload an Excel file containing facility data. Download the template for the correct format.
+        </DialogDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
