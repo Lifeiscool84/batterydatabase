@@ -1,3 +1,5 @@
+import type { Status } from "@/pages/Customers";
+
 export type InteractionType = "call" | "email" | "meeting" | "other";
 
 export interface PriceHistory {
@@ -92,11 +94,4 @@ export interface FacilityGroups {
   engagedProspects: MappedFacility[];
   noResponseContacts: MappedFacility[];
   declinedContacts: MappedFacility[];
-}
-
-export interface Interaction {
-  date: string;
-  type: InteractionType;
-  notes: string;
-  user: string;
 }
