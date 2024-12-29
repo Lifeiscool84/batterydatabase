@@ -6,7 +6,7 @@ import { statusMapping } from "../constants";
 import type { InteractionType } from "../types";
 import type { DbFacility, MappedFacility, FacilityGroups } from "./types";
 
-// Type guard function to validate interaction type
+// Type guard to validate interaction type
 function isValidInteractionType(type: string): type is InteractionType {
   return ["call", "email", "meeting", "other"].includes(type.toLowerCase());
 }
@@ -14,7 +14,10 @@ function isValidInteractionType(type: string): type is InteractionType {
 // Helper function to get a valid interaction type
 function getValidInteractionType(type: string): InteractionType {
   const normalizedType = type.toLowerCase();
-  return isValidInteractionType(normalizedType) ? normalizedType as InteractionType : "other";
+  if (isValidInteractionType(normalizedType)) {
+    return normalizedType as InteractionType;
+  }
+  return "other";
 }
 
 export const useFacilities = (location: Location) => {
