@@ -22,11 +22,7 @@ export const useImportData = () => {
       );
       
       if (rows.length < 2) {
-        toast({
-          title: "Invalid data format",
-          description: "Please include a header row and at least one data row",
-          variant: "destructive",
-        });
+        setErrors({ [-1]: ["Please include a header row and at least one data row"] });
         return;
       }
 
@@ -41,38 +37,23 @@ export const useImportData = () => {
         return obj;
       });
 
-      const { validData, errors } = validateImportData(data);
+      const { validData, errors: validationErrors } = validateImportData(data);
       setPreview(validData);
-      setErrors(errors);
+      setErrors(validationErrors);
 
-      if (Object.keys(errors).length > 0) {
-        if (errors[-1]) {
-          // Show missing columns error
-          toast({
-            title: "Missing Required Columns",
-            description: errors[-1][0],
-            variant: "destructive",
-          });
+      if (Object.keys(validationErrors).length > 0) {
+        if (validationErrors[-1]) {
+          // Missing columns error
+          setErrors(validationErrors);
         } else {
-          toast({
-            title: "Validation Issues Found",
-            description: `Found ${Object.keys(errors).length} rows with errors. Please review the errors below.`,
-            variant: "destructive",
-          });
+          setErrors(validationErrors);
         }
       } else if (validData.length > 0) {
-        toast({
-          title: "Data Validated Successfully",
-          description: `${validData.length} records are ready to import`,
-        });
+        setErrors({});
       }
     } catch (error) {
       console.error('Parse error:', error);
-      toast({
-        title: "Error Parsing Data",
-        description: "Please check your data format and try again",
-        variant: "destructive",
-      });
+      setErrors({ [-1]: ["Error parsing file. Please check your data format."] });
     }
   };
 

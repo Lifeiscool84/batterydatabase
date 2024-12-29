@@ -11,9 +11,51 @@ interface ImportPreviewProps {
 
 export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
   const totalErrors = Object.keys(errors).length;
+  const hasErrors = totalErrors > 0;
 
   return (
     <div className="space-y-4">
+      {hasErrors && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Validation Errors Found</AlertTitle>
+          <AlertDescription>
+            <div className="space-y-2">
+              {Object.entries(errors).map(([row, rowErrors]) => {
+                const rowNum = parseInt(row);
+                if (rowNum === -1) {
+                  // Global errors
+                  return (
+                    <div key="global" className="border-b border-red-200 pb-2">
+                      {rowErrors.map((error, index) => (
+                        <p key={index} className="text-sm">{error}</p>
+                      ))}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={row} className="border-b border-red-200 pb-2">
+                    <p className="font-semibold">Row {rowNum + 1}:</p>
+                    <ul className="list-disc pl-6 mt-1">
+                      {rowErrors.map((error, index) => {
+                        const fieldMatch = error.match(/^([^:]+):/);
+                        const fieldName = fieldMatch ? fieldMatch[1] : 'Field';
+                        const errorMessage = error.replace(/^[^:]+: /, '');
+                        return (
+                          <li key={index} className="text-sm">
+                            <strong>{fieldName}:</strong> {errorMessage}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <h3 className="text-lg font-medium">Preview</h3>
       <ScrollArea className="h-[400px] rounded-md border">
         <Table>
@@ -49,34 +91,6 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
           </TableBody>
         </Table>
       </ScrollArea>
-
-      {totalErrors > 0 && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Validation Errors Found ({totalErrors} rows with errors)</AlertTitle>
-          <AlertDescription>
-            <div className="space-y-2">
-              {Object.entries(errors).map(([row, rowErrors]) => (
-                <div key={row} className="border-b border-red-200 pb-2">
-                  <p className="font-semibold">Row {parseInt(row) + 1}:</p>
-                  <ul className="list-disc pl-6 mt-1">
-                    {rowErrors.map((error, index) => {
-                      // Extract the field name from the error message
-                      const fieldMatch = error.match(/^([^:]+):/);
-                      const fieldName = fieldMatch ? fieldMatch[1] : 'Field';
-                      return (
-                        <li key={index} className="text-sm">
-                          <strong>{fieldName}:</strong> {error.replace(/^[^:]+: /, '')}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
     </div>
   );
 };
