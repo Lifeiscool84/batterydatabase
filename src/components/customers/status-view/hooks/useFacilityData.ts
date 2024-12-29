@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { DbFacility } from "../types";
+import type { DbPriceHistory, DbInteraction, DbStatusHistory } from "../types";
 
 export const useFacilityData = () => {
   const { toast } = useToast();
@@ -36,9 +35,9 @@ export const useFacilityData = () => {
       ]);
 
       return {
-        price_history: priceHistory || [],
-        interactions: interactions || [],
-        status_history: statusHistory || [],
+        price_history: (priceHistory || []) as DbPriceHistory[],
+        interactions: (interactions || []) as DbInteraction[],
+        status_history: (statusHistory || []) as DbStatusHistory[],
         capabilities: capabilities?.map(c => c.capability) || []
       };
     } catch (error) {
@@ -48,7 +47,12 @@ export const useFacilityData = () => {
         description: "Please try again later",
         variant: "destructive",
       });
-      return null;
+      return {
+        price_history: [],
+        interactions: [],
+        status_history: [],
+        capabilities: []
+      };
     }
   };
 
