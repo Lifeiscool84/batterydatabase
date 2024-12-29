@@ -11,17 +11,6 @@ type FacilitySize = Database['public']['Enums']['facility_size'];
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
 const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
-// Helper function to safely convert string to number
-const safeNumberConversion = (val: unknown): number | null => {
-  if (val === null || val === undefined || val === '') return null;
-  if (typeof val === 'number') return val;
-  if (typeof val === 'string') {
-    const num = Number(val.replace(/[^0-9.-]+/g, ''));
-    return isNaN(num) ? null : num;
-  }
-  return null;
-};
-
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Facility name is required"),
   status: z.enum(validStatusValues as [string, ...string[]], {
@@ -34,17 +23,11 @@ export const facilityImportSchema = z.object({
   }).transform((val): FacilitySize => val as FacilitySize),
   email: z.string().email("Invalid email format").optional().nullable(),
   website: z.string().regex(urlRegex, "Invalid website URL").optional().nullable(),
-  buying_price: z.preprocess(
-    safeNumberConversion,
-    z.number().positive("Buying price must be positive").nullable()
-  ),
-  selling_price: z.preprocess(
-    safeNumberConversion,
-    z.number().positive("Selling price must be positive").nullable()
-  ),
-  last_contact: z.string().datetime("Invalid date format").optional().nullable(),
+  buying_price: z.number().positive("Buying price must be positive").nullable(),
+  selling_price: z.number().positive("Selling price must be positive").nullable(),
   general_remarks: z.string().optional().nullable(),
   internal_notes: z.string().optional().nullable(),
+  location: z.string().optional().default("Houston")
 });
 
 export type FacilityImportData = z.infer<typeof facilityImportSchema>;
@@ -68,20 +51,7 @@ export const validateImportData = (data: any[]): {
 
   data.forEach((row, index) => {
     try {
-      // Process the data before validation
-      const processedRow = {
-        ...row,
-        // Convert status to proper case to match enum values
-        status: row.status ? 
-          validStatusValues.find(v => v.toLowerCase() === row.status?.toLowerCase()) || row.status
-          : null,
-        // Convert size to proper case to match enum values
-        size: row.size ?
-          validSizeValues.find(v => v.toLowerCase() === row.size?.toLowerCase()) || row.size
-          : null,
-      };
-
-      const result = facilityImportSchema.safeParse(processedRow);
+      const result = facilityImportSchema.safeParse(row);
       
       if (!result.success) {
         errors[index] = result.error.errors.map(err => 
