@@ -8,12 +8,13 @@ import type { DbFacility, MappedFacility, FacilityGroups } from "./types";
 
 // Type guard function to validate interaction type
 function isValidInteractionType(type: string): type is InteractionType {
-  return ["call", "email", "meeting", "other"].includes(type);
+  return ["call", "email", "meeting", "other"].includes(type.toLowerCase());
 }
 
 // Helper function to get a valid interaction type
 function getValidInteractionType(type: string): InteractionType {
-  return isValidInteractionType(type) ? type : "other";
+  const normalizedType = type.toLowerCase();
+  return isValidInteractionType(normalizedType) ? normalizedType as InteractionType : "other";
 }
 
 export const useFacilities = (location: Location) => {
