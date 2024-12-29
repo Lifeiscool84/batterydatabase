@@ -7,7 +7,9 @@ import { FacilityDetails } from "./FacilityDetails";
 import { FacilityHeader } from "./facility-card/FacilityHeader";
 import { FacilityContact } from "./facility-card/FacilityContact";
 import { FacilityPricing } from "./facility-card/FacilityPricing";
-import { FacilityActions } from "./facility-card/FacilityActions";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
+import { CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface FacilityCardProps {
   facility: {
@@ -66,13 +68,16 @@ export const FacilityCard = ({ facility }: FacilityCardProps) => {
         </div>
 
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <FacilityActions 
-            isExpanded={isExpanded}
-            facilityId={facility.id}
-            facilityName={facility.name}
-            phone={facility.phone}
-            email={facility.email}
-          />
+          <div className="flex justify-end pt-2">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", {
+                  "transform rotate-180": isExpanded
+                })} />
+                Details
+              </Button>
+            </CollapsibleTrigger>
+          </div>
           
           <CollapsibleContent className="mt-4">
             <FacilityDetails
