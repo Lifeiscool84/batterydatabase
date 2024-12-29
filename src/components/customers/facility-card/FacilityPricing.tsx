@@ -16,7 +16,7 @@ export const FacilityPricing = ({
         {buyingPrice && (
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Buying Price:</span>
-            <span>${buyingPrice}/lb</span>
+            <span>${buyingPrice}</span>
           </div>
         )}
         {sellingPrice && (
