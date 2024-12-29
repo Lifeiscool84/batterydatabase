@@ -57,13 +57,8 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
         "Los Angeles": 0
       };
       
-      data.forEach(facility => {
-        // Here you would need to add a location field to your facilities table
-        // For now, we'll just count facilities in the current location
-        if (location === location) {
-          counts[location] = (counts[location] || 0) + 1;
-        }
-      });
+      // For now, we'll count all facilities under the current location
+      counts[location] = data.length;
       
       onLocationCountsChange(counts);
       setFacilities(data);

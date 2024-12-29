@@ -16,6 +16,13 @@ export type Status = "active" | "engaged" | "past" | "general";
 const Customers = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location>("Houston");
   const [view, setView] = useState<"status" | "list" | "map">("status");
+  const [locationCounts, setLocationCounts] = useState<Record<Location, number>>({
+    "Houston": 0,
+    "New York/New Jersey": 0,
+    "Seattle": 0,
+    "Mobile": 0,
+    "Los Angeles": 0
+  });
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -39,7 +46,8 @@ const Customers = () => {
       
       <LocationNav 
         selectedLocation={selectedLocation} 
-        onLocationChange={setSelectedLocation} 
+        onLocationChange={setSelectedLocation}
+        locationCounts={locationCounts}
       />
 
       <Tabs value={view} onValueChange={(value: "status" | "list" | "map") => setView(value)}>
@@ -50,7 +58,12 @@ const Customers = () => {
         </TabsList>
 
         {view === "status" && <StatusView location={selectedLocation} />}
-        {view === "list" && <ListView location={selectedLocation} />}
+        {view === "list" && 
+          <ListView 
+            location={selectedLocation} 
+            onLocationCountsChange={setLocationCounts}
+          />
+        }
         {view === "map" && <MapView location={selectedLocation} />}
       </Tabs>
     </div>
