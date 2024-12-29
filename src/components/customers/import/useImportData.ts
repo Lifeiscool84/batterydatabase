@@ -9,6 +9,7 @@ export const useImportData = () => {
   const { toast } = useToast();
 
   const processData = (text: string) => {
+    console.log('Raw CSV text:', text);
     setRawData(text);
     if (!text.trim()) {
       setPreview([]);
@@ -21,11 +22,14 @@ export const useImportData = () => {
         row.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
       );
       
+      console.log('Parsed CSV rows:', rows);
+      
       if (rows.length < 2) {
         return;
       }
 
       const headers = rows[0].map(h => h.toLowerCase());
+      console.log('CSV headers:', headers);
       
       const data = rows.slice(1).map(row => {
         const obj: Record<string, any> = {};
@@ -35,6 +39,7 @@ export const useImportData = () => {
         return obj;
       });
 
+      console.log('Processed data objects:', data);
       setPreview(data);
       setErrors({});
       

@@ -20,21 +20,27 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
 
     try {
       // Transform the data to match the facilities table schema
-      const preparedData: FacilityInsert[] = data.map(facility => ({
-        name: facility.name,
-        status: facility.status,
-        address: facility.address,
-        phone: facility.phone,
-        size: facility.size,
-        email: facility.email || null,
-        website: facility.website || null,
-        buying_price: facility.buying_price || null,
-        selling_price: facility.selling_price || null,
-        last_contact: facility.last_contact || null,
-        general_remarks: facility.general_remarks || null,
-        internal_notes: facility.internal_notes || null,
-        location: 'Houston' // Default location
-      }));
+      const preparedData: FacilityInsert[] = data.map(facility => {
+        const transformed = {
+          name: facility.name,
+          status: facility.status,
+          address: facility.address,
+          phone: facility.phone,
+          size: facility.size,
+          email: facility.email || null,
+          website: facility.website || null,
+          buying_price: facility.buying_price ? Number(facility.buying_price) : null,
+          selling_price: facility.selling_price ? Number(facility.selling_price) : null,
+          last_contact: facility.last_contact || null,
+          general_remarks: facility.general_remarks || null,
+          internal_notes: facility.internal_notes || null,
+          location: 'Houston' // Default location
+        };
+        console.log('Transformed facility data:', transformed);
+        return transformed;
+      });
+
+      console.log('Final data to be inserted:', preparedData);
 
       const { error } = await supabase
         .from('facilities')
