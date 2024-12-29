@@ -26,6 +26,7 @@ export const useFacilities = (location: Location) => {
       const { data: facilityData, error: facilityError } = await supabase
         .from('facilities')
         .select('*')
+        .eq('location', location) // Filter by location
         .order('name');
 
       if (facilityError) throw facilityError;
