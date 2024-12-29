@@ -38,7 +38,7 @@ export const FacilityImporter = () => {
         <ImportActions 
           data={preview}
           onSuccess={handleSuccess}
-          disabled={Object.keys(errors).length > 0}
+          disabled={preview.length === 0 || Object.keys(errors).length > 0}
         />
       </CardFooter>
     </Card>

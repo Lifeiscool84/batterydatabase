@@ -1,19 +1,18 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { FileUploadButton } from "./components/FileUploadButton";
 import { TemplateDownloadButton } from "./components/TemplateDownloadButton";
 import { processExcelFile } from "./utils/fileUtils";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileText } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FileText, AlertCircle } from "lucide-react";
 
 interface FileUploadProps {
   onDataProcessed: (data: string) => void;
 }
 
 export const FileUpload = ({ onDataProcessed }: FileUploadProps) => {
-  const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string>("");
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -21,16 +20,13 @@ export const FileUpload = ({ onDataProcessed }: FileUploadProps) => {
 
     setIsProcessing(true);
     setCurrentFile(file);
+    setUploadStatus("Processing file...");
 
     try {
-      await processExcelFile(file, onDataProcessed, toast);
+      await processExcelFile(file, onDataProcessed, setUploadStatus);
     } catch (error) {
       console.error('File processing error:', error);
-      toast({
-        title: "Error processing file",
-        description: error instanceof Error ? error.message : "Please try again",
-        variant: "destructive",
-      });
+      setUploadStatus(error instanceof Error ? error.message : "Please try again");
       setCurrentFile(null);
     } finally {
       setIsProcessing(false);
@@ -51,6 +47,14 @@ export const FileUpload = ({ onDataProcessed }: FileUploadProps) => {
           <AlertDescription>
             Current file: {currentFile.name} ({(currentFile.size / 1024).toFixed(2)} KB)
           </AlertDescription>
+        </Alert>
+      )}
+
+      {uploadStatus && (
+        <Alert variant={uploadStatus.includes("error") ? "destructive" : "default"}>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Upload Status</AlertTitle>
+          <AlertDescription>{uploadStatus}</AlertDescription>
         </Alert>
       )}
       

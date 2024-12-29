@@ -51,18 +51,25 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
       </ScrollArea>
 
       {totalErrors > 0 && (
-        <Alert variant="destructive" className="mt-6">
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="mb-2">Validation Errors Found ({totalErrors} rows with errors)</AlertTitle>
+          <AlertTitle>Validation Errors Found ({totalErrors} rows with errors)</AlertTitle>
           <AlertDescription>
             <div className="space-y-2">
               {Object.entries(errors).map(([row, rowErrors]) => (
                 <div key={row} className="border-b border-red-200 pb-2">
                   <p className="font-semibold">Row {parseInt(row) + 1}:</p>
                   <ul className="list-disc pl-6 mt-1">
-                    {rowErrors.map((error, index) => (
-                      <li key={index} className="text-sm">{error}</li>
-                    ))}
+                    {rowErrors.map((error, index) => {
+                      // Extract the field name from the error message
+                      const fieldMatch = error.match(/^([^:]+):/);
+                      const fieldName = fieldMatch ? fieldMatch[1] : 'Field';
+                      return (
+                        <li key={index} className="text-sm">
+                          <strong>{fieldName}:</strong> {error.replace(/^[^:]+: /, '')}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}

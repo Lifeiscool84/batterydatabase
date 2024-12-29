@@ -1,4 +1,3 @@
-import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -7,7 +6,7 @@ const ALLOWED_EXTENSIONS = ['xlsx', 'xls'];
 export const processExcelFile = async (
   file: File,
   onSuccess: (csvData: string) => void,
-  toast: ReturnType<typeof useToast>['toast']
+  setStatus: (status: string) => void
 ) => {
   try {
     // Validate file name and extension
@@ -48,12 +47,7 @@ export const processExcelFile = async (
         .join(','))
       .join('\n');
 
-    // Show detailed success message
-    toast({
-      title: "File processed successfully",
-      description: `Found ${jsonData.length - 1} records in "${file.name}" (${(file.size / 1024).toFixed(2)} KB)`,
-    });
-
+    setStatus(`Successfully processed ${jsonData.length - 1} records from "${file.name}"`);
     onSuccess(csvData);
     
   } catch (error) {
