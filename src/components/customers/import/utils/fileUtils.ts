@@ -17,14 +17,14 @@ const parseCSVLine = (line: string): string[] => {
         inQuotes = !inQuotes;
       }
     } else if (char === ',' && !inQuotes) {
-      result.push(current.trim().replace(/^"|"$/g, ''));
+      result.push(current.trim());
       current = '';
     } else {
       current += char;
     }
   }
   
-  result.push(current.trim().replace(/^"|"$/g, ''));
+  result.push(current.trim());
   return result;
 };
 
@@ -47,10 +47,16 @@ export const processExcelFile = async (
 
     // Read CSV file
     const text = await file.text();
+    console.log("Raw CSV text:", text); // Debug log
+    
+    // Split into lines and remove empty lines
     const lines = text.split(/\r?\n/).filter(line => line.trim());
     
     // Parse CSV lines with proper handling of quoted fields
-    const rows = lines.map(parseCSVLine);
+    const rows = lines.map(line => {
+      console.log("Processing line:", line); // Debug log
+      return parseCSVLine(line);
+    });
     console.log("Parsed CSV rows:", rows);
 
     // Validate minimum rows (header + at least one data row)

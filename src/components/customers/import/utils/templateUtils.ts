@@ -21,7 +21,7 @@ export const downloadTemplate = () => {
   const exampleRow = [
     'ABC Recycling',
     VALID_STATUSES[0].value,
-    '123 Main St, Houston, TX',
+    '"123 Main St, Houston, TX"', // Quoted to handle commas
     '(555) 123-4567',
     VALID_SIZES[0].value,
     'contact@abc.com',
@@ -33,10 +33,10 @@ export const downloadTemplate = () => {
     'Houston'
   ];
 
-  // Convert to CSV format with proper escaping
+  // Convert to CSV format
   const csvContent = [
     headers.join(','),
-    exampleRow.map(value => `"${value.replace(/"/g, '""')}"`).join(',')
+    exampleRow.join(',')
   ].join('\n');
 
   // Create and download the file
