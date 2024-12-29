@@ -11,6 +11,17 @@ type FacilitySize = Database['public']['Enums']['facility_size'];
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
 const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
+// Helper function to safely convert string to number
+const safeNumberConversion = (val: unknown): number | null => {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const num = Number(val.replace(/[^0-9.-]+/g, ''));
+    return isNaN(num) ? null : num;
+  }
+  return null;
+};
+
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Facility name is required"),
   status: z.enum(validStatusValues as [string, ...string[]], {
@@ -24,19 +35,11 @@ export const facilityImportSchema = z.object({
   email: z.string().email("Invalid email format").optional().nullable(),
   website: z.string().regex(urlRegex, "Invalid website URL").optional().nullable(),
   buying_price: z.preprocess(
-    (val) => {
-      if (val === null || val === undefined || val === '') return null;
-      const num = Number(val);
-      return isNaN(num) ? null : num;
-    },
+    safeNumberConversion,
     z.number().positive("Buying price must be positive").nullable()
   ),
   selling_price: z.preprocess(
-    (val) => {
-      if (val === null || val === undefined || val === '') return null;
-      const num = Number(val);
-      return isNaN(num) ? null : num;
-    },
+    safeNumberConversion,
     z.number().positive("Selling price must be positive").nullable()
   ),
   last_contact: z.string().datetime("Invalid date format").optional().nullable(),
