@@ -4,6 +4,7 @@ export const FacilityTableHeader = () => {
   return (
     <TableHeader>
       <TableRow>
+        <TableHead className="w-[50px]"></TableHead>
         <TableHead className="min-w-[150px]">Name</TableHead>
         <TableHead className="min-w-[150px]">Status</TableHead>
         <TableHead className="min-w-[200px]">Address</TableHead>
