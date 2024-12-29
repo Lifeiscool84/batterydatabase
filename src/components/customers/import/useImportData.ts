@@ -9,6 +9,7 @@ export const useImportData = () => {
   const { toast } = useToast();
 
   const processData = (text: string) => {
+    console.log("Processing data:", text);
     setRawData(text);
     if (!text.trim()) {
       setPreview([]);
@@ -20,6 +21,7 @@ export const useImportData = () => {
       const rows = text.trim().split('\n').map(row => 
         row.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
       );
+      console.log("Parsed rows:", rows);
       
       if (rows.length < 2) {
         setErrors({ [-1]: ["Please include a header row and at least one data row"] });
@@ -27,6 +29,8 @@ export const useImportData = () => {
       }
 
       const headers = rows[0].map(h => h.toLowerCase());
+      console.log("Headers:", headers);
+
       const data = rows.slice(1).map(row => {
         const obj: Record<string, any> = {};
         headers.forEach((header, i) => {
@@ -36,8 +40,12 @@ export const useImportData = () => {
         });
         return obj;
       });
+      console.log("Mapped data:", data);
 
       const { validData, errors: validationErrors } = validateImportData(data);
+      console.log("Validation result - Valid data:", validData);
+      console.log("Validation result - Errors:", validationErrors);
+
       setPreview(validData);
       setErrors(validationErrors);
 
