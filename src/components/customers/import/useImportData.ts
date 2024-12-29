@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { validateImportData, type FacilityImportData } from "../validation/importValidation";
+import type { FacilityImportData } from "../validation/importValidation";
 
 export const useImportData = () => {
   const [rawData, setRawData] = useState("");
@@ -9,7 +9,6 @@ export const useImportData = () => {
   const { toast } = useToast();
 
   const processData = (text: string) => {
-    console.log("Processing data:", text);
     setRawData(text);
     if (!text.trim()) {
       setPreview([]);
@@ -21,44 +20,24 @@ export const useImportData = () => {
       const rows = text.trim().split('\n').map(row => 
         row.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
       );
-      console.log("Parsed rows:", rows);
       
       if (rows.length < 2) {
-        setErrors({ [-1]: ["Please include a header row and at least one data row"] });
         return;
       }
 
       const headers = rows[0].map(h => h.toLowerCase());
-      console.log("Headers:", headers);
-
+      
       const data = rows.slice(1).map(row => {
         const obj: Record<string, any> = {};
         headers.forEach((header, i) => {
-          const value = row[i];
-          if (value === undefined || value === '') return;
-          obj[header] = value;
+          obj[header] = row[i] || null;
         });
         return obj;
       });
-      console.log("Mapped data:", data);
 
-      const { validData, errors: validationErrors } = validateImportData(data);
-      console.log("Validation result - Valid data:", validData);
-      console.log("Validation result - Errors:", validationErrors);
-
-      setPreview(validData);
-      setErrors(validationErrors);
-
-      if (Object.keys(validationErrors).length > 0) {
-        if (validationErrors[-1]) {
-          // Missing columns error
-          setErrors(validationErrors);
-        } else {
-          setErrors(validationErrors);
-        }
-      } else if (validData.length > 0) {
-        setErrors({});
-      }
+      setPreview(data);
+      setErrors({});
+      
     } catch (error) {
       console.error('Parse error:', error);
       setErrors({ [-1]: ["Error parsing file. Please check your data format."] });
