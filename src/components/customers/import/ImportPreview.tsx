@@ -16,23 +16,23 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
       <ScrollArea className="h-[400px] rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Row</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Website</TableHead>
-              <TableHead>Buying Price</TableHead>
-              <TableHead>Selling Price</TableHead>
+            <TableRow className="bg-gray-100">
+              <TableHead className="font-semibold">Row</TableHead>
+              <TableHead className="font-semibold">Name</TableHead>
+              <TableHead className="font-semibold">Status</TableHead>
+              <TableHead className="font-semibold">Address</TableHead>
+              <TableHead className="font-semibold">Phone</TableHead>
+              <TableHead className="font-semibold">Size</TableHead>
+              <TableHead className="font-semibold">Email</TableHead>
+              <TableHead className="font-semibold">Website</TableHead>
+              <TableHead className="font-semibold">Buying Price</TableHead>
+              <TableHead className="font-semibold">Selling Price</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((row, index) => (
-              <TableRow key={index} className={errors[index] ? "bg-red-50" : undefined}>
-                <TableCell>{index + 1}</TableCell>
+              <TableRow key={index} className={errors[index] ? "bg-red-50" : "hover:bg-gray-50"}>
+                <TableCell className="font-medium">{index + 1}</TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.status}</TableCell>
                 <TableCell>{row.address}</TableCell>

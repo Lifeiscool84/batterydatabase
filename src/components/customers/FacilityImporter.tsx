@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { ImportPreview } from "./import/ImportPreview";
 import { ImportActions } from "./import/ImportActions";
 import { validateImportData, type FacilityImportData } from "./validation/importValidation";
@@ -102,13 +102,22 @@ export const FacilityImporter = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="data">Paste your data here</Label>
-                <textarea
-                  id="data"
-                  className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder={`Paste CSV data here...\n\nExample format:\n${EXAMPLE_DATA}`}
-                  value={rawData}
-                  onChange={(e) => handlePaste(e.target.value)}
-                />
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="grid grid-cols-[repeat(9,1fr)] gap-0.5 mb-2 bg-gray-100">
+                    {['Name', 'Status', 'Address', 'Phone', 'Size', 'Email', 'Website', 'Buying Price', 'Selling Price'].map((header, i) => (
+                      <div key={i} className="p-2 font-semibold text-sm bg-gray-200 first:rounded-tl-md last:rounded-tr-md">
+                        {header}
+                      </div>
+                    ))}
+                  </div>
+                  <textarea
+                    id="data"
+                    className="min-h-[200px] w-full font-mono text-sm focus-visible:outline-none focus-visible:ring-0"
+                    placeholder={`Paste CSV data here...\n\nExample format:\n${EXAMPLE_DATA}`}
+                    value={rawData}
+                    onChange={(e) => handlePaste(e.target.value)}
+                  />
+                </div>
               </div>
 
               {preview.length > 0 && (
