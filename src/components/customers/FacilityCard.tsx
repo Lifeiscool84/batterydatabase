@@ -66,7 +66,13 @@ export const FacilityCard = ({ facility }: FacilityCardProps) => {
         </div>
 
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <FacilityActions isExpanded={isExpanded} />
+          <FacilityActions 
+            isExpanded={isExpanded}
+            facilityId={facility.id}
+            facilityName={facility.name}
+            phone={facility.phone}
+            email={facility.email}
+          />
           
           <CollapsibleContent className="mt-4">
             <FacilityDetails
