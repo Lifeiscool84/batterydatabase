@@ -17,20 +17,20 @@ const parseCSVLine = (line: string): string[] => {
         inQuotes = !inQuotes;
       }
     } else if (char === ',' && !inQuotes) {
-      result.push(current.trim());
+      result.push(current.trim().replace(/^"|"$/g, ''));
       current = '';
     } else {
       current += char;
     }
   }
   
-  result.push(current.trim());
+  result.push(current.trim().replace(/^"|"$/g, ''));
   return result;
 };
 
 export const processExcelFile = async (
   file: File,
-  onSuccess: (csvData: string) => void,
+  onDataProcessed: (data: string) => void,
   setStatus: (status: string) => void
 ) => {
   try {
@@ -51,13 +51,14 @@ export const processExcelFile = async (
     
     // Parse CSV lines with proper handling of quoted fields
     const rows = lines.map(parseCSVLine);
+    console.log("Parsed CSV rows:", rows);
 
     // Validate minimum rows (header + at least one data row)
     if (rows.length < 2) {
       throw new Error('File must contain a header row and at least one data row');
     }
 
-    // Validate required columns
+    // Validate headers
     const headers = rows[0].map(h => h.toLowerCase());
     const requiredColumns = ['name', 'status', 'address', 'phone', 'size'];
     const missingColumns = requiredColumns.filter(col => !headers.includes(col));
@@ -67,7 +68,7 @@ export const processExcelFile = async (
     }
 
     setStatus(`Successfully processed ${rows.length - 1} records from "${file.name}"`);
-    onSuccess(text);
+    onDataProcessed(text);
     
   } catch (error) {
     console.error('Error processing CSV file:', error);

@@ -1,7 +1,7 @@
 import { VALID_STATUSES, VALID_SIZES } from "../../constants";
 
 export const downloadTemplate = () => {
-  // Define headers
+  // Define headers with clear format examples
   const headers = [
     'name',
     'status',
@@ -17,19 +17,19 @@ export const downloadTemplate = () => {
     'location'
   ];
 
-  // Add example row with valid status and size values
+  // Add example row with valid data
   const exampleRow = [
-    'Facility Name',
+    'ABC Recycling',
     VALID_STATUSES[0].value,
-    '123 Main St, City, State',
-    '(555) 555-5555',
+    '123 Main St, Houston, TX',
+    '(555) 123-4567',
     VALID_SIZES[0].value,
-    'contact@facility.com',
-    'www.facility.com',
-    '1000',
-    '1500',
-    'General remarks here',
-    'Internal notes here',
+    'contact@abc.com',
+    'www.abc.com',
+    '250',
+    '300',
+    'Example remarks',
+    'Internal notes example',
     'Houston'
   ];
 
