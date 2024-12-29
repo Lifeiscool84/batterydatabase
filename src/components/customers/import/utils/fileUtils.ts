@@ -1,7 +1,5 @@
-import * as XLSX from 'xlsx';
-
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_EXTENSIONS = ['xlsx', 'xls'];
+const ALLOWED_EXTENSIONS = ['csv'];
 
 export const processExcelFile = async (
   file: File,
@@ -12,7 +10,7 @@ export const processExcelFile = async (
     // Validate file name and extension
     const fileExt = file.name.split('.').pop()?.toLowerCase();
     if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
-      throw new Error(`Invalid file type. Please upload an Excel file (${ALLOWED_EXTENSIONS.join(' or ')})`);
+      throw new Error('Invalid file type. Please upload a CSV file');
     }
 
     // Validate file size
@@ -20,19 +18,21 @@ export const processExcelFile = async (
       throw new Error('File size exceeds 10MB limit');
     }
 
-    const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    // Read CSV file directly
+    const text = await file.text();
+    const rows = text.split('\n').map(row => 
+      row.trim().split(',').map(cell => 
+        cell.trim().replace(/^"|"$/g, '') // Remove quotes if present
+      )
+    );
 
     // Validate minimum rows (header + at least one data row)
-    if (!Array.isArray(jsonData) || jsonData.length < 2) {
+    if (!Array.isArray(rows) || rows.length < 2) {
       throw new Error('File must contain a header row and at least one data row');
     }
 
     // Validate required columns
-    const headers = (jsonData[0] as string[]).map(h => h.toLowerCase());
+    const headers = rows[0].map(h => h.toLowerCase());
     const requiredColumns = ['name', 'status', 'address', 'phone', 'size'];
     const missingColumns = requiredColumns.filter(col => !headers.includes(col));
 
@@ -40,18 +40,11 @@ export const processExcelFile = async (
       throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
     }
 
-    // Convert to CSV format
-    const csvData = jsonData
-      .map(row => (row as any[])
-        .map(cell => typeof cell === 'string' ? `"${cell}"` : cell)
-        .join(','))
-      .join('\n');
-
-    setStatus(`Successfully processed ${jsonData.length - 1} records from "${file.name}"`);
-    onSuccess(csvData);
+    setStatus(`Successfully processed ${rows.length - 1} records from "${file.name}"`);
+    onSuccess(text);
     
   } catch (error) {
-    console.error('Error processing Excel file:', error);
+    console.error('Error processing CSV file:', error);
     throw error;
   }
 };

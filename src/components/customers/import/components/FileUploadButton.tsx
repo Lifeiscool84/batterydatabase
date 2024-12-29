@@ -18,7 +18,7 @@ export const FileUploadButton = ({ onFileSelect, isProcessing }: FileUploadButto
     <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
       <input
         type="file"
-        accept=".xlsx,.xls"
+        accept=".csv"
         onChange={onFileSelect}
         className="hidden"
         id="file-upload"
@@ -30,10 +30,10 @@ export const FileUploadButton = ({ onFileSelect, isProcessing }: FileUploadButto
         className="w-full"
       >
         <Upload className="w-4 h-4 mr-2" />
-        Choose Excel File
+        Choose CSV File
       </Button>
       <p className="text-sm text-muted-foreground mt-2">
-        Upload .xlsx or .xls file (max 10MB)
+        Upload .csv file (max 10MB)
       </p>
     </div>
   );
