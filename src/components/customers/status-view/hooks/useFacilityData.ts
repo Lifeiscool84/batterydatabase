@@ -35,7 +35,12 @@ export const useFacilityData = () => {
       ]);
 
       return {
-        price_history: (priceHistory || []) as DbPriceHistory[],
+        price_history: (priceHistory || []).map(ph => ({
+          date: ph.created_at,
+          buyingPrice: ph.buying_price,
+          sellingPrice: ph.selling_price,
+          updatedBy: ph.updated_by
+        })) as DbPriceHistory[],
         interactions: (interactions || []) as DbInteraction[],
         status_history: (statusHistory || []) as DbStatusHistory[],
         capabilities: capabilities?.map(c => c.capability) || []
