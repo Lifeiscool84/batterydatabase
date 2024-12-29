@@ -4,7 +4,7 @@ import { ImportActions } from "./import/ImportActions";
 import { FileUpload } from "./import/FileUpload";
 import { useImportData } from "./import/useImportData";
 import { useToast } from "@/hooks/use-toast";
-import { DialogDescription } from "@/components/ui/dialog";
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 export const FacilityImporter = () => {
   const { rawData, preview, errors, processData, resetData } = useImportData();
@@ -21,7 +21,7 @@ export const FacilityImporter = () => {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Import Facilities</CardTitle>
+        <DialogTitle>Import Facilities</DialogTitle>
         <DialogDescription>
           Upload an Excel file containing facility data. Download the template for the correct format.
         </DialogDescription>
@@ -29,17 +29,16 @@ export const FacilityImporter = () => {
       <CardContent>
         <div className="space-y-4">
           <FileUpload onDataProcessed={processData} />
+          {preview.length > 0 && (
+            <ImportPreview data={preview} errors={errors} />
+          )}
         </div>
-
-        {preview.length > 0 && (
-          <ImportPreview data={preview} errors={errors} />
-        )}
       </CardContent>
       <CardFooter>
         <ImportActions 
           data={preview}
           onSuccess={handleSuccess}
-          disabled={preview.length === 0 || Object.keys(errors).length > 0}
+          disabled={Object.keys(errors).length > 0}
         />
       </CardFooter>
     </Card>

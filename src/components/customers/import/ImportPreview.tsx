@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { FacilityImportData } from "../validation/importValidation";
 
@@ -10,6 +10,8 @@ interface ImportPreviewProps {
 }
 
 export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
+  const totalErrors = Object.keys(errors).length;
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Preview</h3>
@@ -48,18 +50,23 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
         </Table>
       </ScrollArea>
 
-      {Object.keys(errors).length > 0 && (
-        <Alert variant="destructive">
+      {totalErrors > 0 && (
+        <Alert variant="destructive" className="mt-6">
           <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="mb-2">Validation Errors Found ({totalErrors} rows with errors)</AlertTitle>
           <AlertDescription>
-            Please fix the following errors:
-            <ul className="list-disc pl-4 mt-2">
+            <div className="space-y-2">
               {Object.entries(errors).map(([row, rowErrors]) => (
-                <li key={row}>
-                  Row {parseInt(row) + 1}: {rowErrors.join(", ")}
-                </li>
+                <div key={row} className="border-b border-red-200 pb-2">
+                  <p className="font-semibold">Row {parseInt(row) + 1}:</p>
+                  <ul className="list-disc pl-6 mt-1">
+                    {rowErrors.map((error, index) => (
+                      <li key={index} className="text-sm">{error}</li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </AlertDescription>
         </Alert>
       )}

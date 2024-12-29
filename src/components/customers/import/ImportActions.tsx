@@ -16,6 +16,15 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
   const { toast } = useToast();
 
   const handleImport = async () => {
+    if (data.length === 0) {
+      toast({
+        title: "No data to import",
+        description: "Please upload a file with valid data first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       // Transform the data to match the facilities table schema
       const preparedData: FacilityInsert[] = data.map(facility => ({
@@ -65,7 +74,8 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
       </p>
       <Button 
         onClick={handleImport}
-        disabled={disabled}
+        disabled={data.length === 0}
+        variant="default"
       >
         Import Data
       </Button>
