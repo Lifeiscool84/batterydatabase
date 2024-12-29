@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
+import { VALID_STATUSES, VALID_SIZES } from "../constants";
 
 interface FileUploadProps {
   onDataProcessed: (data: string) => void;
@@ -121,22 +122,23 @@ export const FileUpload = ({ onDataProcessed }: FileUploadProps) => {
         'location'
       ];
 
-      // Add example row
+      // Add example row with valid status and size values
       const exampleRow = [
         'Facility Name',
-        'No response',
+        VALID_STATUSES[0].value, // Use first valid status
         '123 Main St, City, State',
         '(555) 555-5555',
         'contact@facility.com',
         'www.facility.com',
         '1000',
         '1500',
-        'Medium',
+        VALID_SIZES[0].value, // Use first valid size
         'General remarks here',
         'Internal notes here',
         'Houston'
       ];
 
+      // Add dropdown validation for status and size columns
       const ws = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
 
       // Add column widths and formatting
@@ -156,6 +158,33 @@ export const FileUpload = ({ onDataProcessed }: FileUploadProps) => {
       ];
 
       ws['!cols'] = colWidths;
+
+      // Add data validation for status and size columns
+      const statusValidation = {
+        type: 'list',
+        values: VALID_STATUSES.map(status => status.value)
+      };
+
+      const sizeValidation = {
+        type: 'list',
+        values: VALID_SIZES.map(size => size.value)
+      };
+
+      if (!ws['!dataValidation']) {
+        ws['!dataValidation'] = [];
+      }
+
+      // Add validation to status column (B2:B1000)
+      ws['!dataValidation'].push({
+        sqref: 'B2:B1000',
+        ...statusValidation
+      });
+
+      // Add validation to size column (I2:I1000)
+      ws['!dataValidation'].push({
+        sqref: 'I2:I1000',
+        ...sizeValidation
+      });
 
       // Create workbook and add the worksheet
       const wb = XLSX.utils.book_new();

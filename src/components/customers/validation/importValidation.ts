@@ -1,14 +1,23 @@
 import { z } from "zod";
+import { VALID_STATUSES, VALID_SIZES } from "../constants";
 
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
 const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
+// Create arrays of valid values for validation
+const validStatusValues = VALID_STATUSES.map(status => status.value);
+const validSizeValues = VALID_SIZES.map(size => size.value);
+
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  status: z.enum(["Active", "Engaged", "No response", "Declined"]).default("No response"),
+  status: z.enum(validStatusValues as [string, ...string[]], {
+    errorMap: () => ({ message: `Status must be one of: ${validStatusValues.join(', ')}` })
+  }).default("No response"),
   address: z.string().min(1, "Address is required"),
   phone: z.string().regex(phoneRegex, "Phone must be in format (XXX) XXX-XXXX"),
-  size: z.enum(["Small", "Medium", "Large"]).default("Medium"),
+  size: z.enum(validSizeValues as [string, ...string[]], {
+    errorMap: () => ({ message: `Size must be one of: ${validSizeValues.join(', ')}` })
+  }).default("Medium"),
   email: z.string().email().optional().nullable(),
   website: z.string().regex(urlRegex, "Invalid website URL").optional().nullable(),
   buying_price: z.number().positive().optional().nullable(),
@@ -32,8 +41,14 @@ export const validateImportData = (data: any[]): {
       // Process the data before validation
       const processedRow = {
         ...row,
-        status: mapOldStatusToNew(row.status?.toLowerCase() || 'general'),
-        size: row.size || 'Medium',
+        // Convert status to proper case to match enum values
+        status: row.status ? 
+          validStatusValues.find(v => v.toLowerCase() === row.status?.toLowerCase()) || 'No response'
+          : 'No response',
+        // Convert size to proper case to match enum values
+        size: row.size ?
+          validSizeValues.find(v => v.toLowerCase() === row.size?.toLowerCase()) || 'Medium'
+          : 'Medium',
         // Convert string numbers to actual numbers
         buying_price: row.buying_price ? Number(row.buying_price) : null,
         selling_price: row.selling_price ? Number(row.selling_price) : null,
@@ -49,15 +64,4 @@ export const validateImportData = (data: any[]): {
   });
 
   return { validData, errors };
-};
-
-// Helper function to map old status values to new ones
-const mapOldStatusToNew = (oldStatus: string): "Active" | "Engaged" | "No response" | "Declined" => {
-  const statusMap: Record<string, "Active" | "Engaged" | "No response" | "Declined"> = {
-    'active': 'Active',
-    'engaged': 'Engaged',
-    'past': 'No response',
-    'general': 'No response'
-  };
-  return statusMap[oldStatus] || 'No response';
 };
