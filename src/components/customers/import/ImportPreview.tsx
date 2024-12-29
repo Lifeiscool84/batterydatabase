@@ -24,7 +24,6 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
               {Object.entries(errors).map(([row, rowErrors]) => {
                 const rowNum = parseInt(row);
                 if (rowNum === -1) {
-                  // Global errors
                   return (
                     <div key="global" className="border-b border-red-200 pb-2">
                       {rowErrors.map((error, index) => (
@@ -56,41 +55,47 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
         </Alert>
       )}
 
-      <h3 className="text-lg font-medium">Preview</h3>
-      <ScrollArea className="h-[400px] rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-100">
-              <TableHead className="font-semibold">Row</TableHead>
-              <TableHead className="font-semibold">Name</TableHead>
-              <TableHead className="font-semibold">Status</TableHead>
-              <TableHead className="font-semibold">Address</TableHead>
-              <TableHead className="font-semibold">Phone</TableHead>
-              <TableHead className="font-semibold">Size</TableHead>
-              <TableHead className="font-semibold">Email</TableHead>
-              <TableHead className="font-semibold">Website</TableHead>
-              <TableHead className="font-semibold">Buying Price</TableHead>
-              <TableHead className="font-semibold">Selling Price</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((row, index) => (
-              <TableRow key={index} className={errors[index] ? "bg-red-50" : "hover:bg-gray-50"}>
-                <TableCell className="font-medium">{index + 1}</TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.status}</TableCell>
-                <TableCell>{row.address}</TableCell>
-                <TableCell>{row.phone}</TableCell>
-                <TableCell>{row.size}</TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell>{row.website}</TableCell>
-                <TableCell>{row.buying_price}</TableCell>
-                <TableCell>{row.selling_price}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+      <div className="space-y-2">
+        <h3 className="text-lg font-medium">Preview</h3>
+        <div className="border rounded-md">
+          <ScrollArea className="h-[300px]"> {/* Fixed height scroll area */}
+            <div className="w-full">
+              <Table>
+                <TableHeader className="sticky top-0 bg-gray-100 z-10">
+                  <TableRow>
+                    <TableHead className="font-semibold w-[60px]">Row</TableHead>
+                    <TableHead className="font-semibold min-w-[150px]">Name</TableHead>
+                    <TableHead className="font-semibold min-w-[100px]">Status</TableHead>
+                    <TableHead className="font-semibold min-w-[200px]">Address</TableHead>
+                    <TableHead className="font-semibold min-w-[120px]">Phone</TableHead>
+                    <TableHead className="font-semibold min-w-[80px]">Size</TableHead>
+                    <TableHead className="font-semibold min-w-[180px]">Email</TableHead>
+                    <TableHead className="font-semibold min-w-[150px]">Website</TableHead>
+                    <TableHead className="font-semibold min-w-[120px]">Buying Price</TableHead>
+                    <TableHead className="font-semibold min-w-[120px]">Selling Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.map((row, index) => (
+                    <TableRow key={index} className={errors[index] ? "bg-red-50" : "hover:bg-gray-50"}>
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell className="truncate max-w-[150px]">{row.name}</TableCell>
+                      <TableCell className="truncate max-w-[100px]">{row.status}</TableCell>
+                      <TableCell className="truncate max-w-[200px]">{row.address}</TableCell>
+                      <TableCell className="truncate max-w-[120px]">{row.phone}</TableCell>
+                      <TableCell className="truncate max-w-[80px]">{row.size}</TableCell>
+                      <TableCell className="truncate max-w-[180px]">{row.email}</TableCell>
+                      <TableCell className="truncate max-w-[150px]">{row.website}</TableCell>
+                      <TableCell className="truncate max-w-[120px]">{row.buying_price}</TableCell>
+                      <TableCell className="truncate max-w-[120px]">{row.selling_price}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
     </div>
   );
 };
