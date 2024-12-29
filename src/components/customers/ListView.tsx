@@ -41,14 +41,14 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
 
   const fetchFacilities = async () => {
     try {
-      const { data, error } = await supabase
+      // First, fetch all facilities to calculate counts
+      const { data: allFacilities, error: countError } = await supabase
         .from('facilities')
-        .select('*')
-        .order('name');
+        .select('location');
 
-      if (error) throw error;
-      
-      // Calculate location counts
+      if (countError) throw countError;
+
+      // Calculate counts for each location
       const counts: Record<Location, number> = {
         "Houston": 0,
         "New York/New Jersey": 0,
@@ -56,12 +56,26 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
         "Mobile": 0,
         "Los Angeles": 0
       };
-      
-      // For now, we'll count all facilities under the current location
-      counts[location] = data.length;
-      
+
+      allFacilities?.forEach(facility => {
+        const loc = facility.location as Location;
+        if (counts[loc] !== undefined) {
+          counts[loc]++;
+        }
+      });
+
       onLocationCountsChange(counts);
-      setFacilities(data);
+
+      // Then fetch facilities for the selected location
+      const { data: locationFacilities, error } = await supabase
+        .from('facilities')
+        .select('*')
+        .eq('location', location)
+        .order('name');
+
+      if (error) throw error;
+      
+      setFacilities(locationFacilities);
     } catch (error) {
       console.error('Error fetching facilities:', error);
       toast({
@@ -103,6 +117,7 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
       address: "",
       phone: "",
       size: "Medium" as Size,
+      location: location // Set the location for the new facility
     };
 
     try {

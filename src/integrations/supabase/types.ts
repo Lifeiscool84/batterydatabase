@@ -19,6 +19,7 @@ export type Database = {
           id: string
           internal_notes: string | null
           last_contact: string | null
+          location: string
           name: string
           phone: string
           selling_price: number | null
@@ -36,6 +37,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           last_contact?: string | null
+          location?: string
           name: string
           phone: string
           selling_price?: number | null
@@ -53,6 +55,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           last_contact?: string | null
+          location?: string
           name?: string
           phone?: string
           selling_price?: number | null
