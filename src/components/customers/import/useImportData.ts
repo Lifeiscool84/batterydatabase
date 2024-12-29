@@ -46,21 +46,30 @@ export const useImportData = () => {
       setErrors(errors);
 
       if (Object.keys(errors).length > 0) {
-        toast({
-          title: "Validation issues found",
-          description: "Please review the errors below and correct the data",
-          variant: "destructive",
-        });
+        if (errors[-1]) {
+          // Show missing columns error
+          toast({
+            title: "Missing Required Columns",
+            description: errors[-1][0],
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Validation Issues Found",
+            description: `Found ${Object.keys(errors).length} rows with errors. Please review the errors below.`,
+            variant: "destructive",
+          });
+        }
       } else if (validData.length > 0) {
         toast({
-          title: "Data validated successfully",
-          description: `${validData.length} records ready to import`,
+          title: "Data Validated Successfully",
+          description: `${validData.length} records are ready to import`,
         });
       }
     } catch (error) {
       console.error('Parse error:', error);
       toast({
-        title: "Error parsing data",
+        title: "Error Parsing Data",
         description: "Please check your data format and try again",
         variant: "destructive",
       });
