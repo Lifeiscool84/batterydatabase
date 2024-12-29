@@ -15,23 +15,82 @@ export const FileUpload = ({ onDataProcessed }: FileUploadProps) => {
     if (!file) return;
 
     try {
+      // Validate file type
+      const fileType = file.name.split('.').pop()?.toLowerCase();
+      if (!['xlsx', 'xls'].includes(fileType || '')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an Excel file (.xlsx or .xls)",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (10MB limit)
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "File too large",
+          description: "Please upload a file smaller than 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        
-        // Convert to CSV format
-        const csvData = jsonData
-          .map(row => (row as any[])
-            .map(cell => typeof cell === 'string' ? `"${cell}"` : cell)
-            .join(','))
-          .join('\n');
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          // Validate minimum rows (header + at least one data row)
+          if (jsonData.length < 2) {
+            toast({
+              title: "Invalid file content",
+              description: "File must contain a header row and at least one data row",
+              variant: "destructive",
+            });
+            return;
+          }
 
-        onDataProcessed(csvData);
+          // Convert to CSV format
+          const csvData = jsonData
+            .map(row => (row as any[])
+              .map(cell => typeof cell === 'string' ? `"${cell}"` : cell)
+              .join(','))
+            .join('\n');
+
+          onDataProcessed(csvData);
+          
+          // Clear the input value to allow uploading the same file again
+          const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+          if (fileInput) fileInput.value = '';
+
+          toast({
+            title: "File processed successfully",
+            description: "Your data is ready for review",
+          });
+        } catch (error) {
+          console.error('Error processing Excel file:', error);
+          toast({
+            title: "Error processing file",
+            description: "Please make sure your file follows the template format",
+            variant: "destructive",
+          });
+        }
       };
+
+      reader.onerror = () => {
+        toast({
+          title: "Error reading file",
+          description: "Please try again or use a different file",
+          variant: "destructive",
+        });
+      };
+
       reader.readAsBinaryString(file);
 
     } catch (error) {
