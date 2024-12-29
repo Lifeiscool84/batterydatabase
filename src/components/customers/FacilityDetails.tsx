@@ -24,10 +24,14 @@ export const FacilityDetails = ({
   return (
     <div className="p-4 space-y-4 bg-muted/30 rounded-md">
       <Tabs defaultValue="interactions" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="interactions" className="flex items-center gap-2">
             <History className="h-4 w-4" />
-            History
+            Status History
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center gap-2">
+            <History className="h-4 w-4" />
+            Activity
           </TabsTrigger>
           <TabsTrigger value="prices" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
@@ -44,6 +48,36 @@ export const FacilityDetails = ({
         </TabsList>
 
         <TabsContent value="interactions" className="mt-4">
+          <ScrollArea className="h-[300px] rounded-md border p-4">
+            {statusHistory.length === 0 ? (
+              <div className="text-center text-muted-foreground">No status changes recorded</div>
+            ) : (
+              <div className="space-y-4">
+                {statusHistory.map((status, index) => (
+                  <div key={index} className="flex flex-col gap-2 pb-4 border-b last:border-0">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="text-sm font-medium">
+                          {status.from} → {status.to}
+                        </div>
+                        <div className="text-sm">{status.reason}</div>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {format(new Date(status.date), "PPp")}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <User className="h-3 w-3 mr-1" />
+                      {status.user}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="activity" className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
             {interactions.length === 0 ? (
               <div className="text-center text-muted-foreground">No interactions recorded</div>
@@ -108,7 +142,7 @@ export const FacilityDetails = ({
             ) : (
               <div className="space-y-2">
                 {capabilities.map((capability, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                     <span>{capability}</span>
                   </div>
@@ -120,8 +154,8 @@ export const FacilityDetails = ({
 
         <TabsContent value="notes" className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
-            <div className="prose prose-sm">
-              {notes}
+            <div className="prose prose-sm max-w-none">
+              {notes || "No additional notes."}
             </div>
           </ScrollArea>
         </TabsContent>
