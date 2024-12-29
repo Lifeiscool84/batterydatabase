@@ -2,7 +2,22 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody } from "@/components/ui/table";
 import { FacilityTableHeader } from "./FacilityTableHeader";
 import { FacilityRow } from "./FacilityRow";
-import type { Facility } from "../constants";
+import type { DbStatus, Size } from "../constants";
+
+interface Facility {
+  id: string;
+  name: string;
+  status: DbStatus;
+  address: string;
+  phone: string;
+  email?: string;
+  website?: string;
+  buying_price?: number;
+  selling_price?: number;
+  size: Size;
+  general_remarks?: string;
+  internal_notes?: string;
+}
 
 interface FacilityGroupProps {
   facilities: Facility[];
