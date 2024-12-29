@@ -19,9 +19,28 @@ export const useImportData = () => {
     }
 
     try {
-      const rows = text.trim().split('\n').map(row => 
-        row.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
-      );
+      // Split into lines and handle quoted values properly
+      const lines = text.trim().split('\n');
+      const rows = lines.map(line => {
+        const row: string[] = [];
+        let inQuotes = false;
+        let currentValue = '';
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            row.push(currentValue.trim());
+            currentValue = '';
+          } else {
+            currentValue += char;
+          }
+        }
+        row.push(currentValue.trim());
+        return row;
+      });
       
       console.log('Parsed CSV rows:', rows);
       
@@ -36,12 +55,15 @@ export const useImportData = () => {
       const data = rows.slice(1).map(row => {
         const obj: Record<string, any> = {};
         headers.forEach((header, i) => {
+          // Remove any quotes from the value
+          const value = row[i]?.replace(/^"|"$/g, '') || null;
+          
           if (header === 'buying_price' || header === 'selling_price') {
             // Convert price strings to numbers or null
-            const value = row[i] ? parseFloat(row[i]) : null;
-            obj[header] = isNaN(value) ? null : value;
+            const numValue = value ? parseFloat(value) : null;
+            obj[header] = isNaN(numValue) ? null : numValue;
           } else {
-            obj[header] = row[i] || null;
+            obj[header] = value;
           }
         });
         return obj;
