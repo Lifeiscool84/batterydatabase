@@ -24,10 +24,6 @@ export const FileUpload = ({ onDataProcessed }: FileUploadProps) => {
 
     try {
       await processExcelFile(file, onDataProcessed, toast);
-      toast({
-        title: "File processed successfully",
-        description: `File "${file.name}" (${(file.size / 1024).toFixed(2)} KB) has been processed.`,
-      });
     } catch (error) {
       console.error('File processing error:', error);
       toast({

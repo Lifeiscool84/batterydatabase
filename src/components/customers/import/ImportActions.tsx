@@ -42,7 +42,7 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
 
       toast({
         title: "Import successful",
-        description: `${data.length} facilities have been imported`,
+        description: `${data.length} facilities have been imported successfully.`,
       });
       
       onSuccess();
@@ -57,11 +57,18 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
   };
 
   return (
-    <Button 
-      onClick={handleImport}
-      disabled={disabled}
-    >
-      Import Data
-    </Button>
+    <div className="flex justify-between items-center w-full">
+      <p className="text-sm text-muted-foreground">
+        {data.length > 0 ? 
+          `${data.length} records ready to import` : 
+          'No records to import'}
+      </p>
+      <Button 
+        onClick={handleImport}
+        disabled={disabled}
+      >
+        Import Data
+      </Button>
+    </div>
   );
 };

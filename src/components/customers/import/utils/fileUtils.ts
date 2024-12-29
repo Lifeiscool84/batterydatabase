@@ -48,6 +48,12 @@ export const processExcelFile = async (
         .join(','))
       .join('\n');
 
+    // Show detailed success message
+    toast({
+      title: "File processed successfully",
+      description: `Found ${jsonData.length - 1} records in "${file.name}" (${(file.size / 1024).toFixed(2)} KB)`,
+    });
+
     onSuccess(csvData);
     
   } catch (error) {
