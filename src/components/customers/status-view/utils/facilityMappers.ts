@@ -12,14 +12,14 @@ export const mapFacilityToCardProps = (facility: DbFacility): MappedFacility => 
   website: facility.website || undefined,
   buyingPrice: facility.buying_price || undefined,
   sellingPrice: facility.selling_price || undefined,
-  lastContact: facility.last_contact || 'No contact recorded',
   size: facility.size,
   remarks: facility.general_remarks || undefined,
+  updatedAt: facility.updated_at || undefined,
   priceHistory: facility.price_history?.map(ph => ({
-    date: ph.created_at || new Date().toISOString(),
-    buyingPrice: ph.buying_price || 0,
-    sellingPrice: ph.selling_price || 0,
-    updatedBy: ph.updated_by
+    date: ph.date,
+    buyingPrice: ph.buyingPrice,
+    sellingPrice: ph.sellingPrice,
+    updatedBy: ph.updatedBy
   })) || [],
   interactions: facility.interactions?.map(int => ({
     date: int.created_at || new Date().toISOString(),

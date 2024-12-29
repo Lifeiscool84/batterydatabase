@@ -1,11 +1,13 @@
 interface FacilityPricingProps {
   buyingPrice?: number;
   sellingPrice?: number;
+  updatedAt?: string;
 }
 
 export const FacilityPricing = ({ 
   buyingPrice, 
-  sellingPrice
+  sellingPrice,
+  updatedAt
 }: FacilityPricingProps) => {
   return (
     <div className="space-y-2">
@@ -25,6 +27,11 @@ export const FacilityPricing = ({
         )}
         {!buyingPrice && !sellingPrice && (
           <span className="text-muted-foreground">No pricing information available</span>
+        )}
+        {updatedAt && (
+          <div className="text-xs text-muted-foreground pt-2">
+            Last updated: {new Date(updatedAt).toLocaleDateString()}
+          </div>
         )}
       </div>
     </div>

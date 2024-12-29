@@ -40,6 +40,7 @@ export interface DbFacility {
   size: "Small" | "Medium" | "Large";
   general_remarks: string | null;
   internal_notes: string | null;
+  updated_at: string | null;
   price_history?: DbPriceHistory[];
   interactions?: DbInteraction[];
   status_history?: DbStatusHistory[];
@@ -58,6 +59,7 @@ export interface MappedFacility {
   sellingPrice?: number;
   size: "Small" | "Medium" | "Large";
   remarks?: string;
+  updatedAt?: string;
   priceHistory: PriceHistory[];
   interactions: Interaction[];
   statusHistory: StatusHistory[];

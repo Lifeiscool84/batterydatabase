@@ -24,6 +24,7 @@ interface FacilityCardProps {
     sellingPrice?: number;
     size: "Small" | "Medium" | "Large";
     remarks?: string;
+    updatedAt?: string;
   };
 }
 
@@ -65,6 +66,7 @@ export const FacilityCard = ({ facility }: FacilityCardProps) => {
             <FacilityPricing 
               buyingPrice={facility.buyingPrice}
               sellingPrice={facility.sellingPrice}
+              updatedAt={facility.updatedAt}
             />
           </div>
         </div>
