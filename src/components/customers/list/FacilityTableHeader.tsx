@@ -11,7 +11,7 @@ export const FacilityTableHeader = () => {
         <TableHead className="min-w-[100px]">Size</TableHead>
         <TableHead className="min-w-[200px]">Email</TableHead>
         <TableHead className="min-w-[200px]">Website</TableHead>
-        <TableHead className="min-w-[150px]">Buying Price ($/lb)</TableHead>
+        <TableHead className="min-w-[150px]">Buying Price</TableHead>
         <TableHead className="min-w-[150px]">Selling Price</TableHead>
         <TableHead className="min-w-[200px]">General Remarks</TableHead>
         <TableHead className="min-w-[200px]">Internal Notes</TableHead>
