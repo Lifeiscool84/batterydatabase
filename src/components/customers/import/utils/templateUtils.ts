@@ -7,11 +7,11 @@ export const downloadTemplate = () => {
     'status',
     'address',
     'phone',
+    'size',
     'email',
     'website',
     'buying_price',
     'selling_price',
-    'size',
     'general_remarks',
     'internal_notes',
     'location'
@@ -23,20 +23,20 @@ export const downloadTemplate = () => {
     VALID_STATUSES[0].value,
     '123 Main St, City, State',
     '(555) 555-5555',
+    VALID_SIZES[0].value,
     'contact@facility.com',
     'www.facility.com',
     '1000',
     '1500',
-    VALID_SIZES[0].value,
     'General remarks here',
     'Internal notes here',
     'Houston'
   ];
 
-  // Convert to CSV format
+  // Convert to CSV format with proper escaping
   const csvContent = [
     headers.join(','),
-    exampleRow.map(value => `"${value}"`).join(',')
+    exampleRow.map(value => `"${value.replace(/"/g, '""')}"`).join(',')
   ].join('\n');
 
   // Create and download the file

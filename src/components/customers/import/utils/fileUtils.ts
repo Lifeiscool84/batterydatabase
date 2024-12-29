@@ -1,13 +1,40 @@
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_EXTENSIONS = ['csv'];
 
+const parseCSVLine = (line: string): string[] => {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (i + 1 < line.length && line[i + 1] === '"') {
+        current += '"';
+        i++; // Skip next quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  result.push(current.trim());
+  return result;
+};
+
 export const processExcelFile = async (
   file: File,
   onSuccess: (csvData: string) => void,
   setStatus: (status: string) => void
 ) => {
   try {
-    // Validate file name and extension
+    // Validate file extension
     const fileExt = file.name.split('.').pop()?.toLowerCase();
     if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
       throw new Error('Invalid file type. Please upload a CSV file');
@@ -18,16 +45,15 @@ export const processExcelFile = async (
       throw new Error('File size exceeds 10MB limit');
     }
 
-    // Read CSV file directly
+    // Read CSV file
     const text = await file.text();
-    const rows = text.split('\n').map(row => 
-      row.trim().split(',').map(cell => 
-        cell.trim().replace(/^"|"$/g, '') // Remove quotes if present
-      )
-    );
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    
+    // Parse CSV lines with proper handling of quoted fields
+    const rows = lines.map(parseCSVLine);
 
     // Validate minimum rows (header + at least one data row)
-    if (!Array.isArray(rows) || rows.length < 2) {
+    if (rows.length < 2) {
       throw new Error('File must contain a header row and at least one data row');
     }
 

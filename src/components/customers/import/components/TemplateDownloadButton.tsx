@@ -11,7 +11,7 @@ export const TemplateDownloadButton = () => {
       downloadTemplate();
       toast({
         title: "Template downloaded",
-        description: "Fill in the template and upload it back to import facilities",
+        description: "Fill in the CSV template and upload it back to import facilities",
       });
     } catch (error) {
       console.error('Error creating template:', error);
@@ -27,7 +27,7 @@ export const TemplateDownloadButton = () => {
     <div className="flex justify-center">
       <Button variant="outline" onClick={handleDownload}>
         <Download className="w-4 h-4 mr-2" />
-        Download Template
+        Download CSV Template
       </Button>
     </div>
   );
