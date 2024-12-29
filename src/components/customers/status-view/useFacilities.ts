@@ -17,16 +17,12 @@ export const useFacilities = (location: Location) => {
   const { toast } = useToast();
   const { fetchFacilityData } = useFacilityData();
 
-  useEffect(() => {
-    fetchFacilities();
-  }, [location]);
-
   const fetchFacilities = async () => {
     try {
       const { data: facilityData, error: facilityError } = await supabase
         .from('facilities')
         .select('*')
-        .eq('location', location) // Filter by location
+        .eq('location', location)
         .order('name');
 
       if (facilityError) throw facilityError;
@@ -61,5 +57,9 @@ export const useFacilities = (location: Location) => {
     }
   };
 
-  return { facilities, isLoading };
+  useEffect(() => {
+    fetchFacilities();
+  }, [location]);
+
+  return { facilities, isLoading, refetch: fetchFacilities };
 };

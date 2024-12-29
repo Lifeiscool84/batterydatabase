@@ -7,7 +7,7 @@ interface StatusViewProps {
 }
 
 export const StatusView = ({ location }: StatusViewProps) => {
-  const { facilities, isLoading } = useFacilities(location);
+  const { facilities, isLoading, refetch } = useFacilities(location);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -19,24 +19,28 @@ export const StatusView = ({ location }: StatusViewProps) => {
         title="Active Partners"
         titleColor="text-success"
         facilities={facilities.activePartners}
+        onDelete={refetch}
       />
 
       <FacilitySection
         title="Engaged Prospects"
         titleColor="text-warning"
         facilities={facilities.engagedProspects}
+        onDelete={refetch}
       />
 
       <FacilitySection
         title="No Response"
         titleColor="text-danger"
         facilities={facilities.noResponseContacts}
+        onDelete={refetch}
       />
 
       <FacilitySection
         title="Declined"
         titleColor="text-muted-foreground"
         facilities={facilities.declinedContacts}
+        onDelete={refetch}
       />
     </div>
   );

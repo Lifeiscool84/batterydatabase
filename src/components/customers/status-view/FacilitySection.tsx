@@ -1,14 +1,14 @@
 import { FacilityCard } from "../FacilityCard";
-import type { Status } from "@/pages/Customers";
 import type { MappedFacility } from "../types/display";
 
 interface FacilitySectionProps {
   title: string;
   titleColor: string;
   facilities: MappedFacility[];
+  onDelete?: () => void;
 }
 
-export const FacilitySection = ({ title, titleColor, facilities }: FacilitySectionProps) => {
+export const FacilitySection = ({ title, titleColor, facilities, onDelete }: FacilitySectionProps) => {
   return (
     <section>
       <h2 className={`text-xl font-semibold mb-4 ${titleColor}`}>
@@ -18,7 +18,8 @@ export const FacilitySection = ({ title, titleColor, facilities }: FacilitySecti
         {facilities.map(facility => (
           <FacilityCard 
             key={facility.id} 
-            facility={facility} 
+            facility={facility}
+            onDelete={onDelete}
           />
         ))}
       </div>

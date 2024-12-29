@@ -35,10 +35,6 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchFacilities();
-  }, [location]);
-
   const fetchFacilities = async () => {
     try {
       // First, fetch all facilities to calculate counts
@@ -87,6 +83,10 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchFacilities();
+  }, [location]);
 
   const handleCellChange = async (id: string, field: keyof Facility, value: any) => {
     try {
@@ -166,6 +166,7 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
                     key={facility.id}
                     facility={facility}
                     onSave={handleCellChange}
+                    onDelete={fetchFacilities}
                   />
                 ))}
               </TableBody>
