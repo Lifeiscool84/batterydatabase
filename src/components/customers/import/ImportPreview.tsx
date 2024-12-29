@@ -23,6 +23,10 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
               <TableHead>Address</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Size</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Website</TableHead>
+              <TableHead>Buying Price</TableHead>
+              <TableHead>Selling Price</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -34,6 +38,10 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
                 <TableCell>{row.address}</TableCell>
                 <TableCell>{row.phone}</TableCell>
                 <TableCell>{row.size}</TableCell>
+                <TableCell>{row.email}</TableCell>
+                <TableCell>{row.website}</TableCell>
+                <TableCell>{row.buying_price}</TableCell>
+                <TableCell>{row.selling_price}</TableCell>
               </TableRow>
             ))}
           </TableBody>
