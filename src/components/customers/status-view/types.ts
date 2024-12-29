@@ -2,12 +2,10 @@ import type { Status } from "@/pages/Customers";
 import type { PriceHistory, InteractionType, StatusHistory } from "../types";
 
 export interface DbPriceHistory {
-  id: string;
-  facility_id: string | null;
-  buying_price: number | null;
-  selling_price: number | null;
-  updated_by: string;
-  created_at: string | null;
+  date: string;
+  buyingPrice: number;
+  sellingPrice: number;
+  updatedBy: string;
 }
 
 export interface DbInteraction {
@@ -39,7 +37,6 @@ export interface DbFacility {
   website: string | null;
   buying_price: number | null;
   selling_price: number | null;
-  last_contact: string | null;
   size: "Small" | "Medium" | "Large";
   general_remarks: string | null;
   internal_notes: string | null;
@@ -59,7 +56,6 @@ export interface MappedFacility {
   website?: string;
   buyingPrice?: number;
   sellingPrice?: number;
-  lastContact: string;
   size: "Small" | "Medium" | "Large";
   remarks?: string;
   priceHistory: PriceHistory[];

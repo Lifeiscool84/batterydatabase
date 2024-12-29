@@ -1,24 +1,31 @@
 interface FacilityPricingProps {
   buyingPrice?: number;
   sellingPrice?: number;
-  lastContact: string;
 }
 
-export const FacilityPricing = ({ buyingPrice, sellingPrice, lastContact }: FacilityPricingProps) => {
+export const FacilityPricing = ({ 
+  buyingPrice, 
+  sellingPrice
+}: FacilityPricingProps) => {
   return (
     <div className="space-y-2">
-      {buyingPrice && (
-        <div className="text-sm">
-          Buying: ${buyingPrice}/ton
-        </div>
-      )}
-      {sellingPrice && (
-        <div className="text-sm">
-          Selling: ${sellingPrice}/ton
-        </div>
-      )}
-      <div className="text-sm text-muted-foreground">
-        Last Contact: {lastContact}
+      <h3 className="font-semibold">Pricing</h3>
+      <div className="space-y-1 text-sm">
+        {buyingPrice && (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Buying Price:</span>
+            <span>${buyingPrice}/lb</span>
+          </div>
+        )}
+        {sellingPrice && (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Selling Price:</span>
+            <span>${sellingPrice}</span>
+          </div>
+        )}
+        {!buyingPrice && !sellingPrice && (
+          <span className="text-muted-foreground">No pricing information available</span>
+        )}
       </div>
     </div>
   );
