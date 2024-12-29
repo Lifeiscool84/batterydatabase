@@ -12,6 +12,7 @@ import { DbStatus, Size } from "./constants";
 
 interface ListViewProps {
   location: Location;
+  onLocationCountsChange: (counts: Record<Location, number>) => void;
 }
 
 type Facility = {
@@ -29,7 +30,7 @@ type Facility = {
   internal_notes?: string;
 };
 
-export const ListView = ({ location }: ListViewProps) => {
+export const ListView = ({ location, onLocationCountsChange }: ListViewProps) => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -46,6 +47,25 @@ export const ListView = ({ location }: ListViewProps) => {
         .order('name');
 
       if (error) throw error;
+      
+      // Calculate location counts
+      const counts: Record<Location, number> = {
+        "Houston": 0,
+        "New York/New Jersey": 0,
+        "Seattle": 0,
+        "Mobile": 0,
+        "Los Angeles": 0
+      };
+      
+      data.forEach(facility => {
+        // Here you would need to add a location field to your facilities table
+        // For now, we'll just count facilities in the current location
+        if (location === location) {
+          counts[location] = (counts[location] || 0) + 1;
+        }
+      });
+      
+      onLocationCountsChange(counts);
       setFacilities(data);
     } catch (error) {
       console.error('Error fetching facilities:', error);

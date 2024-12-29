@@ -3,23 +3,28 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Location } from "@/pages/Customers";
 
-const locations: { id: Location; count: number }[] = [
-  { id: "Houston", count: 45 },
-  { id: "New York/New Jersey", count: 38 },
-  { id: "Seattle", count: 22 },
-  { id: "Mobile", count: 15 },
-  { id: "Los Angeles", count: 31 },
-];
-
 interface LocationNavProps {
   selectedLocation: Location;
   onLocationChange: (location: Location) => void;
+  locationCounts: Record<Location, number>;
 }
 
-export const LocationNav = ({ selectedLocation, onLocationChange }: LocationNavProps) => {
+export const LocationNav = ({ 
+  selectedLocation, 
+  onLocationChange,
+  locationCounts 
+}: LocationNavProps) => {
+  const locations: Location[] = [
+    "Houston",
+    "New York/New Jersey",
+    "Seattle",
+    "Mobile",
+    "Los Angeles",
+  ];
+
   return (
     <nav className="flex flex-wrap gap-2 p-2 bg-background rounded-lg border">
-      {locations.map(({ id, count }) => (
+      {locations.map((id) => (
         <Button
           key={id}
           variant={selectedLocation === id ? "default" : "ghost"}
@@ -31,7 +36,7 @@ export const LocationNav = ({ selectedLocation, onLocationChange }: LocationNavP
         >
           {id}
           <Badge variant="secondary" className="ml-1">
-            {count}
+            {locationCounts[id] || 0}
           </Badge>
         </Button>
       ))}
