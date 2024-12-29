@@ -24,21 +24,21 @@ export const StatusView = ({ location }: StatusViewProps) => {
 
       <FacilitySection
         title="Engaged Prospects"
-        titleColor="text-warning"
+        titleColor="text-[#0FA0CE]"
         facilities={facilities.engagedProspects}
         onDelete={refetch}
       />
 
       <FacilitySection
         title="No Response"
-        titleColor="text-danger"
+        titleColor="text-black"
         facilities={facilities.noResponseContacts}
         onDelete={refetch}
       />
 
       <FacilitySection
         title="Declined"
-        titleColor="text-muted-foreground"
+        titleColor="text-[#ea384c]"
         facilities={facilities.declinedContacts}
         onDelete={refetch}
       />
