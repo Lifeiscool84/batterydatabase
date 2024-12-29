@@ -1,4 +1,4 @@
-import type { DbFacility, MappedFacility } from "../types";
+import type { DbFacility, MappedFacility } from "../../types";
 import { statusMapping } from "../../constants";
 import { getValidInteractionType } from "./interactionTypeUtils";
 

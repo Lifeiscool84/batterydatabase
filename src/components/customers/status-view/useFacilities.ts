@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Location } from "@/pages/Customers";
-import type { FacilityGroups } from "../types";
+import type { FacilityGroups } from "../types/display";
 import { useFacilityData } from "./hooks/useFacilityData";
 import { mapFacilityToCardProps } from "./utils/facilityMappers";
 

@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { DbPriceHistory, DbInteraction, DbStatusHistory } from "../types";
+import type { DbPriceHistory, DbInteraction, DbStatusHistory } from "../../types";
 
 export const useFacilityData = () => {
   const { toast } = useToast();
