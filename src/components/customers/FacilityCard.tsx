@@ -54,17 +54,21 @@ export const FacilityCard = ({ facility }: FacilityCardProps) => {
       />
 
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <FacilityContact 
-            phone={facility.phone}
-            email={facility.email}
-            website={facility.website}
-          />
-          <FacilityPricing 
-            buyingPrice={facility.buyingPrice}
-            sellingPrice={facility.sellingPrice}
-            lastContact={facility.lastContact}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="min-w-0">
+            <FacilityContact 
+              phone={facility.phone}
+              email={facility.email}
+              website={facility.website}
+            />
+          </div>
+          <div className="min-w-0">
+            <FacilityPricing 
+              buyingPrice={facility.buyingPrice}
+              sellingPrice={facility.sellingPrice}
+              lastContact={facility.lastContact}
+            />
+          </div>
         </div>
 
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
