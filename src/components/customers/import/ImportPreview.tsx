@@ -14,7 +14,7 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
   const hasErrors = totalErrors > 0;
 
   return (
-    <div className="space-y-4 max-h-[60vh] flex flex-col">
+    <div className="space-y-4 max-h-[400px] flex flex-col">
       {hasErrors && (
         <Alert variant="destructive" className="flex-shrink-0">
           <AlertCircle className="h-3 w-3" />
@@ -57,10 +57,10 @@ export const ImportPreview = ({ data, errors }: ImportPreviewProps) => {
         </Alert>
       )}
 
-      <div className="space-y-2 flex-1 min-h-0">
+      <div className="space-y-2 flex-1 min-h-0 overflow-hidden">
         <h3 className="text-sm font-medium flex-shrink-0">Preview</h3>
         <div className="border rounded-md flex-1 min-h-0">
-          <ScrollArea className="h-[300px] w-full">
+          <ScrollArea className="h-[250px] w-full">
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
