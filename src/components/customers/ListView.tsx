@@ -30,6 +30,13 @@ type Facility = {
   internal_notes?: string;
 };
 
+type GroupedFacilities = {
+  active: Facility[];
+  engaged: Facility[];
+  noResponse: Facility[];
+  declined: Facility[];
+};
+
 export const ListView = ({ location, onLocationCountsChange }: ListViewProps) => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +124,7 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
       address: "",
       phone: "",
       size: "Medium" as Size,
-      location: location // Set the location for the new facility
+      location: location
     };
 
     try {
@@ -145,6 +152,56 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
     }
   };
 
+  // Group facilities by status
+  const groupedFacilities: GroupedFacilities = facilities.reduce((acc, facility) => {
+    switch (facility.status) {
+      case "Active":
+        acc.active.push(facility);
+        break;
+      case "Engaged":
+        acc.engaged.push(facility);
+        break;
+      case "No response":
+        acc.noResponse.push(facility);
+        break;
+      case "Declined":
+        acc.declined.push(facility);
+        break;
+    }
+    return acc;
+  }, { active: [], engaged: [], noResponse: [], declined: [] } as GroupedFacilities);
+
+  const renderFacilityGroup = (facilities: Facility[], title: string, titleColor: string) => {
+    if (facilities.length === 0) return null;
+
+    return (
+      <div className="mb-8">
+        <h3 className={`text-xl font-semibold mb-4 ${titleColor}`}>
+          {title} ({facilities.length})
+        </h3>
+        <div className="border rounded-md">
+          <ScrollArea className="w-full" type="scroll">
+            <div className="min-w-[1200px] w-full">
+              <Table>
+                <FacilityTableHeader />
+                <TableBody>
+                  {facilities.map((facility) => (
+                    <FacilityRow
+                      key={facility.id}
+                      facility={facility}
+                      onSave={handleCellChange}
+                      onDelete={fetchFacilities}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -155,24 +212,11 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
         </Button>
       </div>
 
-      <div className="border rounded-md">
-        <ScrollArea className="h-[calc(100vh-300px)] w-full" type="scroll">
-          <div className="min-w-[1200px] w-full">
-            <Table>
-              <FacilityTableHeader />
-              <TableBody>
-                {facilities.map((facility) => (
-                  <FacilityRow
-                    key={facility.id}
-                    facility={facility}
-                    onSave={handleCellChange}
-                    onDelete={fetchFacilities}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
+      <div className="space-y-8">
+        {renderFacilityGroup(groupedFacilities.active, "Active Partners", "text-success")}
+        {renderFacilityGroup(groupedFacilities.engaged, "Engaged Prospects", "text-[#0FA0CE]")}
+        {renderFacilityGroup(groupedFacilities.noResponse, "No Response", "text-black")}
+        {renderFacilityGroup(groupedFacilities.declined, "Declined", "text-[#ea384c]")}
       </div>
     </div>
   );
