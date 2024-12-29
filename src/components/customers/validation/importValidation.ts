@@ -23,8 +23,22 @@ export const facilityImportSchema = z.object({
   }).transform((val): FacilitySize => val as FacilitySize),
   email: z.string().email("Invalid email format").optional().nullable(),
   website: z.string().regex(urlRegex, "Invalid website URL").optional().nullable(),
-  buying_price: z.coerce.number().positive("Buying price must be positive").optional().nullable(),
-  selling_price: z.coerce.number().positive("Selling price must be positive").optional().nullable(),
+  buying_price: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    },
+    z.number().positive("Buying price must be positive").nullable()
+  ),
+  selling_price: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    },
+    z.number().positive("Selling price must be positive").nullable()
+  ),
   last_contact: z.string().datetime("Invalid date format").optional().nullable(),
   general_remarks: z.string().optional().nullable(),
   internal_notes: z.string().optional().nullable(),
@@ -62,9 +76,6 @@ export const validateImportData = (data: any[]): {
         size: row.size ?
           validSizeValues.find(v => v.toLowerCase() === row.size?.toLowerCase()) || row.size
           : null,
-        // Convert string numbers to actual numbers
-        buying_price: row.buying_price ? Number(row.buying_price) : null,
-        selling_price: row.selling_price ? Number(row.selling_price) : null,
       };
 
       const result = facilityImportSchema.safeParse(processedRow);
