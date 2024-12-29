@@ -1,6 +1,8 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare } from "lucide-react";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FacilityDetailsProps {
   facilityId: string;
@@ -11,9 +13,27 @@ export const FacilityDetails = ({
   facilityId,
   notes
 }: FacilityDetailsProps) => {
+  useEffect(() => {
+    const fetchFacilityDetails = async () => {
+      const { data, error } = await supabase
+        .from('facilities')
+        .select('general_remarks, internal_notes')
+        .eq('id', facilityId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching facility details:', error);
+      } else {
+        console.log('Facility details:', data);
+      }
+    };
+
+    fetchFacilityDetails();
+  }, [facilityId]);
+
   return (
     <div className="p-4 space-y-4 bg-muted/30 rounded-md">
-      <Tabs defaultValue="notes" className="w-full">
+      <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
