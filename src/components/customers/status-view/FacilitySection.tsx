@@ -1,6 +1,6 @@
 import { FacilityCard } from "../FacilityCard";
 import type { Status } from "@/pages/Customers";
-import type { MappedFacility } from "../types";
+import type { MappedFacility } from "../types/display";
 
 interface FacilitySectionProps {
   title: string;
