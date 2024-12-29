@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { VALID_STATUSES, VALID_SIZES } from "../constants";
+import type { Database } from "@/integrations/supabase/types";
 
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
 const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
@@ -8,16 +9,19 @@ const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 const validStatusValues = VALID_STATUSES.map(status => status.value);
 const validSizeValues = VALID_SIZES.map(size => size.value);
 
+type FacilityStatus = Database['public']['Enums']['facility_status'];
+type FacilitySize = Database['public']['Enums']['facility_size'];
+
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Name is required"),
   status: z.enum(validStatusValues as [string, ...string[]], {
     errorMap: () => ({ message: `Status must be one of: ${validStatusValues.join(', ')}` })
-  }).default("No response"),
+  }).transform((val): FacilityStatus => val as FacilityStatus),
   address: z.string().min(1, "Address is required"),
   phone: z.string().regex(phoneRegex, "Phone must be in format (XXX) XXX-XXXX"),
   size: z.enum(validSizeValues as [string, ...string[]], {
     errorMap: () => ({ message: `Size must be one of: ${validSizeValues.join(', ')}` })
-  }).default("Medium"),
+  }).transform((val): FacilitySize => val as FacilitySize),
   email: z.string().email().optional().nullable(),
   website: z.string().regex(urlRegex, "Invalid website URL").optional().nullable(),
   buying_price: z.number().positive().optional().nullable(),
