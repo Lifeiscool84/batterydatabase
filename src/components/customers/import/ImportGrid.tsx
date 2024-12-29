@@ -29,8 +29,17 @@ export const ImportGrid = ({ rawData, onDataChange, exampleData }: ImportGridPro
     onDataChange(pastedData);
   };
 
-  const handleCellFocus = (index: number) => {
-    setFocusedCell(index);
+  const handleCellInput = (rowIndex: number, colIndex: number, value: string) => {
+    const rows = rawData
+      ? rawData.split('\n').map(row => row.split(',').map(cell => cell.trim()))
+      : [Array(HEADERS.length).fill('')];
+    
+    // Update the specific cell
+    rows[rowIndex][colIndex] = value;
+    
+    // Convert back to CSV format
+    const newData = rows.map(row => row.join(',')).join('\n');
+    onDataChange(newData);
   };
 
   // Convert raw data to grid format
@@ -68,17 +77,18 @@ export const ImportGrid = ({ rawData, onDataChange, exampleData }: ImportGridPro
                 row.map((cell, colIndex) => {
                   const cellIndex = rowIndex * HEADERS.length + colIndex;
                   return (
-                    <div
+                    <input
                       key={`${rowIndex}-${colIndex}`}
-                      className={`border-b border-r last:border-r-0 p-2 text-sm font-mono
+                      type="text"
+                      value={cell}
+                      onChange={(e) => handleCellInput(rowIndex, colIndex, e.target.value)}
+                      className={`border-b border-r last:border-r-0 p-2 text-sm font-mono outline-none
                                 ${focusedCell === cellIndex ? 'bg-blue-50' : 'hover:bg-gray-50'}
                                 ${!cell && 'text-gray-400'}`}
                       style={{ width: HEADERS[colIndex].width }}
-                      onFocus={() => handleCellFocus(cellIndex)}
-                      tabIndex={0}
-                    >
-                      {cell || (rowIndex === 0 && colIndex === 0 ? 'Click here and paste your Excel data' : '')}
-                    </div>
+                      onFocus={() => setFocusedCell(cellIndex)}
+                      placeholder={rowIndex === 0 && colIndex === 0 ? 'Click here and paste your Excel data' : ''}
+                    />
                   );
                 })
               ))}
