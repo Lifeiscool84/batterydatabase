@@ -27,7 +27,6 @@ export const EditableCell = ({
     }
   };
 
-  // Adjust height on initial render and when value changes
   useEffect(() => {
     adjustHeight();
   }, [value]);
@@ -38,12 +37,12 @@ export const EditableCell = ({
         defaultValue={value}
         onValueChange={(value) => onSave(facilityId, field, value)}
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className="w-full bg-background">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background border shadow-lg">
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem key={option.value} value={option.value} className="hover:bg-accent">
               {option.label}
             </SelectItem>
           ))}

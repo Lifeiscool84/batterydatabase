@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Table, TableBody } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Location } from "@/pages/Customers";
-import { FacilityTableHeader } from "./list/FacilityTableHeader";
-import { FacilityRow } from "./list/FacilityRow";
 import { DbStatus, Size } from "./constants";
+import { ListHeader } from "./list/ListHeader";
+import { FacilityGroup } from "./list/FacilityGroup";
 
 interface ListViewProps {
   location: Location;
@@ -44,14 +40,12 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
 
   const fetchFacilities = async () => {
     try {
-      // First, fetch all facilities to calculate counts
       const { data: allFacilities, error: countError } = await supabase
         .from('facilities')
         .select('location');
 
       if (countError) throw countError;
 
-      // Calculate counts for each location
       const counts: Record<Location, number> = {
         "Houston": 0,
         "New York/New Jersey": 0,
@@ -69,7 +63,6 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
 
       onLocationCountsChange(counts);
 
-      // Then fetch facilities for the selected location
       const { data: locationFacilities, error } = await supabase
         .from('facilities')
         .select('*')
@@ -152,7 +145,6 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
     }
   };
 
-  // Group facilities by status
   const groupedFacilities: GroupedFacilities = facilities.reduce((acc, facility) => {
     switch (facility.status) {
       case "Active":
@@ -171,52 +163,39 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
     return acc;
   }, { active: [], engaged: [], noResponse: [], declined: [] } as GroupedFacilities);
 
-  const renderFacilityGroup = (facilities: Facility[], title: string, titleColor: string) => {
-    if (facilities.length === 0) return null;
-
-    return (
-      <div className="mb-8">
-        <h3 className={`text-xl font-semibold mb-4 ${titleColor}`}>
-          {title} ({facilities.length})
-        </h3>
-        <div className="border rounded-md">
-          <ScrollArea className="w-full" type="scroll">
-            <div className="min-w-[1200px] w-full">
-              <Table>
-                <FacilityTableHeader />
-                <TableBody>
-                  {facilities.map((facility) => (
-                    <FacilityRow
-                      key={facility.id}
-                      facility={facility}
-                      onSave={handleCellChange}
-                      onDelete={fetchFacilities}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Facilities in {location}</h2>
-        <Button onClick={addNewRow}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Facility
-        </Button>
-      </div>
-
+      <ListHeader location={location} onAddFacility={addNewRow} />
+      
       <div className="space-y-8">
-        {renderFacilityGroup(groupedFacilities.active, "Active Partners", "text-success")}
-        {renderFacilityGroup(groupedFacilities.engaged, "Engaged Prospects", "text-[#0FA0CE]")}
-        {renderFacilityGroup(groupedFacilities.noResponse, "No Response", "text-black")}
-        {renderFacilityGroup(groupedFacilities.declined, "Declined", "text-[#ea384c]")}
+        <FacilityGroup 
+          facilities={groupedFacilities.active}
+          title="Active Partners"
+          titleColor="text-success"
+          onSave={handleCellChange}
+          onDelete={fetchFacilities}
+        />
+        <FacilityGroup 
+          facilities={groupedFacilities.engaged}
+          title="Engaged Prospects"
+          titleColor="text-[#0FA0CE]"
+          onSave={handleCellChange}
+          onDelete={fetchFacilities}
+        />
+        <FacilityGroup 
+          facilities={groupedFacilities.noResponse}
+          title="No Response"
+          titleColor="text-black"
+          onSave={handleCellChange}
+          onDelete={fetchFacilities}
+        />
+        <FacilityGroup 
+          facilities={groupedFacilities.declined}
+          title="Declined"
+          titleColor="text-[#ea384c]"
+          onSave={handleCellChange}
+          onDelete={fetchFacilities}
+        />
       </div>
     </div>
   );
