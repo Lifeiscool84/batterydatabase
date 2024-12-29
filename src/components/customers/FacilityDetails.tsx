@@ -1,7 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FacilityDetailsProps {
@@ -13,6 +13,9 @@ export const FacilityDetails = ({
   facilityId,
   notes
 }: FacilityDetailsProps) => {
+  const [generalRemarks, setGeneralRemarks] = useState<string>("");
+  const [internalNotes, setInternalNotes] = useState<string>("");
+
   useEffect(() => {
     const fetchFacilityDetails = async () => {
       const { data, error } = await supabase
@@ -25,6 +28,8 @@ export const FacilityDetails = ({
         console.error('Error fetching facility details:', error);
       } else {
         console.log('Facility details:', data);
+        setGeneralRemarks(data.general_remarks || "No general remarks available.");
+        setInternalNotes(data.internal_notes || "No internal notes available.");
       }
     };
 
@@ -47,16 +52,16 @@ export const FacilityDetails = ({
 
         <TabsContent value="general" className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
-            <div className="prose prose-sm max-w-none">
-              {notes || "No general remarks available."}
+            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+              {generalRemarks}
             </div>
           </ScrollArea>
         </TabsContent>
 
         <TabsContent value="notes" className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
-            <div className="prose prose-sm max-w-none">
-              {notes || "No internal notes available."}
+            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+              {internalNotes}
             </div>
           </ScrollArea>
         </TabsContent>
