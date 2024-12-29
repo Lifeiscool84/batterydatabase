@@ -71,6 +71,15 @@ export const FacilityRow = ({ facility, onSave, onDelete }: FacilityRowProps) =>
   return (
     <>
       <TableRow>
+        <td className="p-4">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </td>
         <FacilityCell
           value={facility.name}
           field="name"
@@ -145,15 +154,6 @@ export const FacilityRow = ({ facility, onSave, onDelete }: FacilityRowProps) =>
           onSave={onSave}
           className="min-w-[200px]"
         />
-        <td className="p-4">
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </td>
       </TableRow>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
