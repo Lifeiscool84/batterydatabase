@@ -27,7 +27,7 @@ export interface DbStatusHistory {
 export interface DbFacility {
   id: string;
   name: string;
-  status: string;
+  status: "Active" | "Engaged" | "No response" | "Declined" | "Invalid";
   address: string;
   phone: string;
   email: string | null;
