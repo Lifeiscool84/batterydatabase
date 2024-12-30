@@ -1,4 +1,5 @@
 import type { Status } from "@/pages/Customers";
+import type { Size } from "../constants";
 
 export type InteractionType = "call" | "email" | "meeting" | "other";
 
@@ -34,7 +35,7 @@ export interface MappedFacility {
   website?: string;
   buyingPrice?: number;
   sellingPrice?: number;
-  size: "Small" | "Medium" | "Large" | "Invalid";
+  size: Size;
   remarks?: string;
   updatedAt?: string;
   priceHistory: PriceHistory[];
