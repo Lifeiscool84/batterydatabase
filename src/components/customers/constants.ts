@@ -14,7 +14,7 @@ export const VALID_SIZES = [
 ] as const;
 
 export type DbStatus = typeof VALID_STATUSES[number]['value'];
-export type DisplayStatus = "active" | "engaged" | "past" | "general";
+export type DisplayStatus = "active" | "engaged" | "past" | "general" | "invalid";
 export type Size = typeof VALID_SIZES[number]['value'];
 
 export const statusMapping: Record<DbStatus, DisplayStatus> = {
@@ -22,5 +22,5 @@ export const statusMapping: Record<DbStatus, DisplayStatus> = {
   "Engaged": "engaged",
   "No response": "past",
   "Declined": "general",
-  "Invalid": "general"
+  "Invalid": "invalid"
 };
