@@ -16,6 +16,11 @@ export interface Facility {
   created_at?: string | null;
   updated_at?: string | null;
   location: string;
+  // Add missing properties that are populated from related tables
+  price_history?: DbPriceHistory[];
+  interactions?: DbInteraction[];
+  status_history?: DbStatusHistory[];
+  capabilities?: string[];
 }
 
 export interface DbPriceHistory {
