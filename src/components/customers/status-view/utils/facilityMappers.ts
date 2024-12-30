@@ -1,9 +1,9 @@
-import type { DbFacility } from "../../types/database";
+import type { Facility } from "../../types/database";
 import type { MappedFacility } from "../../types/display";
 import { statusMapping } from "../../constants";
 import { getValidInteractionType } from "./interactionTypeUtils";
 
-export const mapFacilityToCardProps = (facility: DbFacility): MappedFacility => ({
+export const mapFacilityToCardProps = (facility: Facility): MappedFacility => ({
   id: facility.id,
   name: facility.name,
   status: statusMapping[facility.status],
