@@ -8,42 +8,24 @@ const validSizeValues = VALID_SIZES.map(size => size.value);
 type FacilityStatus = Database['public']['Enums']['facility_status'];
 type FacilitySize = Database['public']['Enums']['facility_size'];
 
-// More lenient phone validation - accepts any string with 10 digits
-const phoneRegex = /^\D*(\d\D*){10}$/;
-// More lenient URL validation
-const urlRegex = /^(https?:\/\/)?[\w.-]+\.[a-zA-Z]{2,}(\/\S*)?$/;
-
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Facility name is required"),
   status: z.enum(validStatusValues as [string, ...string[]], {
     errorMap: () => ({ message: `Status must be one of: ${validStatusValues.join(', ')}` })
   }).transform((val): FacilityStatus => val as FacilityStatus),
   address: z.string().min(1, "Address is required"),
-  phone: z.string()
-    .regex(phoneRegex, "Phone must contain 10 digits")
-    .transform(val => {
-      // Format phone number to (XXX) XXX-XXXX
-      const digits = val.replace(/\D/g, '');
-      return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
-    }),
+  phone: z.string(),
   size: z.enum(validSizeValues as [string, ...string[]], {
     errorMap: () => ({ message: `Size must be one of: ${validSizeValues.join(', ')}` })
   }).transform((val): FacilitySize => val as FacilitySize),
-  email: z.string()
-    .email("Invalid email format")
-    .nullable()
-    .optional(),
-  website: z.string()
-    .regex(urlRegex, "Invalid website URL")
-    .transform(url => url.toLowerCase())
-    .nullable()
-    .optional(),
+  email: z.string().nullable().optional(),
+  website: z.string().nullable().optional(),
   buying_price: z.string()
     .transform(val => val ? parseFloat(val) : null)
-    .pipe(z.number().positive("Buying price must be positive").nullable()),
+    .pipe(z.number().nullable()),
   selling_price: z.string()
     .transform(val => val ? parseFloat(val) : null)
-    .pipe(z.number().positive("Selling price must be positive").nullable()),
+    .pipe(z.number().nullable()),
   general_remarks: z.string().optional().nullable(),
   internal_notes: z.string().optional().nullable(),
   location: z.string().optional().default("Houston")
