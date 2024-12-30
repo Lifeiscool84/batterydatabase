@@ -34,7 +34,7 @@ interface FacilityCardProps {
     website?: string;
     buyingPrice?: number;
     sellingPrice?: number;
-    size: "Small" | "Medium" | "Large";
+    size: "Small" | "Medium" | "Large" | "Invalid";
     remarks?: string;
     updatedAt?: string;
   };
