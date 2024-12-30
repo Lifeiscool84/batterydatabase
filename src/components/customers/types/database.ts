@@ -34,7 +34,7 @@ export interface DbFacility {
   website: string | null;
   buying_price: number | null;
   selling_price: number | null;
-  size: "Small" | "Medium" | "Large";
+  size: "Small" | "Medium" | "Large" | "Invalid";
   general_remarks: string | null;
   internal_notes: string | null;
   updated_at: string | null;

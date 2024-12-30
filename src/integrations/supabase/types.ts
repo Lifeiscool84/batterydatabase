@@ -339,7 +339,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      facility_size: "Small" | "Medium" | "Large"
+      facility_size: "Small" | "Medium" | "Large" | "Invalid"
       facility_status: "Active" | "Engaged" | "No response" | "Declined"
       port_type: "ORIGIN" | "DESTINATION"
       shipping_line: "ZIM" | "HMM"
