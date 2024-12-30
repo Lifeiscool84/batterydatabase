@@ -49,4 +49,5 @@ export interface FacilityGroups {
   engagedProspects: MappedFacility[];
   noResponseContacts: MappedFacility[];
   declinedContacts: MappedFacility[];
+  invalidContacts: MappedFacility[];
 }

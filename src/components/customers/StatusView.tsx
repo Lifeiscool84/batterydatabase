@@ -42,6 +42,13 @@ export const StatusView = ({ location }: StatusViewProps) => {
         facilities={facilities.declinedContacts}
         onDelete={refetch}
       />
+
+      <FacilitySection
+        title="Invalid"
+        titleColor="text-gray-500"
+        facilities={facilities.invalidContacts}
+        onDelete={refetch}
+      />
     </div>
   );
 };

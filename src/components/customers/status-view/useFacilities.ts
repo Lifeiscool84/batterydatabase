@@ -11,7 +11,8 @@ export const useFacilities = (location: Location) => {
     activePartners: [],
     engagedProspects: [],
     noResponseContacts: [],
-    declinedContacts: []
+    declinedContacts: [],
+    invalidContacts: []
   });
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -43,7 +44,8 @@ export const useFacilities = (location: Location) => {
         activePartners: mappedFacilities.filter(f => f.status === "active"),
         engagedProspects: mappedFacilities.filter(f => f.status === "engaged"),
         noResponseContacts: mappedFacilities.filter(f => f.status === "past"),
-        declinedContacts: mappedFacilities.filter(f => f.status === "general")
+        declinedContacts: mappedFacilities.filter(f => f.status === "general"),
+        invalidContacts: mappedFacilities.filter(f => f.status === "invalid")
       });
     } catch (error) {
       console.error('Error fetching facilities:', error);
