@@ -10,14 +10,22 @@ type FacilitySize = Database['public']['Enums']['facility_size'];
 
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Facility name is required"),
-  status: z.enum(validStatusValues as [string, ...string[]], {
-    errorMap: () => ({ message: `Status must be one of: ${validStatusValues.join(', ')}` })
-  }).transform((val): FacilityStatus => val as FacilityStatus),
+  status: z.string()
+    .transform(val => {
+      const matchedStatus = validStatusValues.find(
+        status => status.toLowerCase() === val.toLowerCase()
+      );
+      return (matchedStatus || "Invalid") as FacilityStatus;
+    }),
   address: z.string().min(1, "Address is required"),
   phone: z.string(),
-  size: z.enum(validSizeValues as [string, ...string[]], {
-    errorMap: () => ({ message: `Size must be one of: ${validSizeValues.join(', ')}` })
-  }).transform((val): FacilitySize => val as FacilitySize),
+  size: z.string()
+    .transform(val => {
+      const matchedSize = validSizeValues.find(
+        size => size.toLowerCase() === val.toLowerCase()
+      );
+      return (matchedSize || "Invalid") as FacilitySize;
+    }),
   email: z.string().nullable().optional(),
   website: z.string().nullable().optional(),
   buying_price: z.string()

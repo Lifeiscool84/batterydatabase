@@ -4,10 +4,10 @@ export const downloadTemplate = () => {
   // Define headers with clear format examples
   const headers = [
     'name',
-    'status',
+    `status (${VALID_STATUSES.map(s => s.value).join('/')} - case insensitive)`,
     'address',
     'phone',
-    'size',
+    `size (${VALID_SIZES.map(s => s.value).join('/')} - case insensitive)`,
     'email',
     'website',
     'buying_price',
