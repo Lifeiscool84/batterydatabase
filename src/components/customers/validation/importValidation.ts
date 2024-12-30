@@ -8,8 +8,10 @@ const validSizeValues = VALID_SIZES.map(size => size.value);
 type FacilityStatus = Database['public']['Enums']['facility_status'];
 type FacilitySize = Database['public']['Enums']['facility_size'];
 
-const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
-const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+// More lenient phone validation - accepts any string with 10 digits
+const phoneRegex = /^\D*(\d\D*){10}$/;
+// More lenient URL validation
+const urlRegex = /^(https?:\/\/)?[\w.-]+\.[a-zA-Z]{2,}(\/\S*)?$/;
 
 export const facilityImportSchema = z.object({
   name: z.string().min(1, "Facility name is required"),
@@ -17,14 +19,31 @@ export const facilityImportSchema = z.object({
     errorMap: () => ({ message: `Status must be one of: ${validStatusValues.join(', ')}` })
   }).transform((val): FacilityStatus => val as FacilityStatus),
   address: z.string().min(1, "Address is required"),
-  phone: z.string().regex(phoneRegex, "Phone must be in format (XXX) XXX-XXXX"),
+  phone: z.string()
+    .regex(phoneRegex, "Phone must contain 10 digits")
+    .transform(val => {
+      // Format phone number to (XXX) XXX-XXXX
+      const digits = val.replace(/\D/g, '');
+      return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+    }),
   size: z.enum(validSizeValues as [string, ...string[]], {
     errorMap: () => ({ message: `Size must be one of: ${validSizeValues.join(', ')}` })
   }).transform((val): FacilitySize => val as FacilitySize),
-  email: z.string().email("Invalid email format").optional().nullable(),
-  website: z.string().regex(urlRegex, "Invalid website URL").optional().nullable(),
-  buying_price: z.number().positive("Buying price must be positive").nullable(),
-  selling_price: z.number().positive("Selling price must be positive").nullable(),
+  email: z.string()
+    .email("Invalid email format")
+    .nullable()
+    .optional(),
+  website: z.string()
+    .regex(urlRegex, "Invalid website URL")
+    .transform(url => url.toLowerCase())
+    .nullable()
+    .optional(),
+  buying_price: z.string()
+    .transform(val => val ? parseFloat(val) : null)
+    .pipe(z.number().positive("Buying price must be positive").nullable()),
+  selling_price: z.string()
+    .transform(val => val ? parseFloat(val) : null)
+    .pipe(z.number().positive("Selling price must be positive").nullable()),
   general_remarks: z.string().optional().nullable(),
   internal_notes: z.string().optional().nullable(),
   location: z.string().optional().default("Houston")
