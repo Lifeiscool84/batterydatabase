@@ -29,11 +29,11 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
           size: facility.size,
           email: facility.email || null,
           website: facility.website || null,
-          buying_price: facility.buying_price ? Number(facility.buying_price) : null,
-          selling_price: facility.selling_price ? Number(facility.selling_price) : null,
+          buying_price: facility.buying_price || null,
+          selling_price: facility.selling_price || null,
           general_remarks: facility.general_remarks || null,
           internal_notes: facility.internal_notes || null,
-          location: 'Houston' // Default location
+          location: facility.location || 'Houston'
         };
         console.log('Transformed facility data:', transformed);
         return transformed;

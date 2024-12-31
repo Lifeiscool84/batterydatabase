@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import type { FacilityImportData } from "./import/validation/importValidation";
-import { validateImportData } from "./import/validation/importValidation";
+import type { FacilityImportData } from "./validation/importValidation";
+import { validateImportData } from "./validation/importValidation";
 
 export const useImportData = () => {
   const [rawData, setRawData] = useState("");
@@ -63,13 +63,7 @@ export const useImportData = () => {
         headers.forEach((header, i) => {
           // Remove any quotes from the value
           const value = row[i]?.replace(/^"|"$/g, '') || null;
-          
-          // Map the cleaned header names to their proper fields
-          const fieldName = header === 'status' ? 'status' :
-                          header === 'size' ? 'size' :
-                          header;
-          
-          obj[fieldName] = value;
+          obj[header] = value;
         });
         return obj;
       });

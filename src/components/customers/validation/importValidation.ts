@@ -12,9 +12,9 @@ export const facilityImportSchema = z.object({
   name: z.string(),
   status: z.string()
     .transform(val => {
-      const status = val.replace(/\s*\([^)]*\)/, '').trim();
+      const status = val.toLowerCase().trim();
       const matchedStatus = validStatusValues.find(
-        s => s.toLowerCase() === status.toLowerCase()
+        s => s.toLowerCase() === status
       );
       return (matchedStatus || "Invalid") as FacilityStatus;
     }),
@@ -22,32 +22,18 @@ export const facilityImportSchema = z.object({
   phone: z.string(),
   size: z.string()
     .transform(val => {
-      const size = val.replace(/\s*\([^)]*\)/, '').trim();
+      const size = val.toLowerCase().trim();
       const matchedSize = validSizeValues.find(
-        s => s.toLowerCase() === size.toLowerCase()
+        s => s.toLowerCase() === size
       );
       return (matchedSize || "Invalid") as FacilitySize;
     }),
   email: z.string().nullable().optional(),
   website: z.string().nullable().optional(),
-  buying_price: z.string()
-    .transform(val => {
-      if (!val) return null;
-      // Try to extract a number, but if not possible, keep the original string
-      const number = parseFloat(val.replace(/[^\d.-]/g, ''));
-      return isNaN(number) ? val : number;
-    })
-    .nullable(),
-  selling_price: z.string()
-    .transform(val => {
-      if (!val) return null;
-      // Try to extract a number, but if not possible, keep the original string
-      const number = parseFloat(val.replace(/[^\d.-]/g, ''));
-      return isNaN(number) ? val : number;
-    })
-    .nullable(),
-  general_remarks: z.string().optional().nullable(),
-  internal_notes: z.string().optional().nullable(),
+  buying_price: z.string().nullable().optional(),
+  selling_price: z.string().nullable().optional(),
+  general_remarks: z.string().nullable().optional(),
+  internal_notes: z.string().nullable().optional(),
   location: z.string().optional().default("Houston")
 });
 
