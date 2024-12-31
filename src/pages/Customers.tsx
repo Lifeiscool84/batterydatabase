@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { BackButton } from "@/components/layout/BackButton";
 
 export type Location = "Houston" | "New York/New Jersey" | "Seattle" | "Mobile" | "Los Angeles";
-export type Status = "active" | "engaged" | "past" | "general";
+export type Status = "active" | "engaged" | "past" | "general" | "invalid";
 
 const Customers = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location>("Houston");
