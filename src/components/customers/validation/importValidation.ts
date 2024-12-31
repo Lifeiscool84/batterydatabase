@@ -9,53 +9,41 @@ type FacilityStatus = Database['public']['Enums']['facility_status'];
 type FacilitySize = Database['public']['Enums']['facility_size'];
 
 export const facilityImportSchema = z.object({
-  name: z.string().min(1, "Facility name is required"),
+  name: z.string(),
   status: z.string()
     .transform(val => {
-      // Remove the explanatory text from column header if present
       const status = val.replace(/\s*\([^)]*\)/, '').trim();
       const matchedStatus = validStatusValues.find(
         s => s.toLowerCase() === status.toLowerCase()
       );
-      if (!matchedStatus) {
-        throw new Error(`Invalid status "${val}". Must be one of: ${validStatusValues.join(', ')}`);
-      }
-      return matchedStatus as FacilityStatus;
+      return (matchedStatus || "Invalid") as FacilityStatus;
     }),
-  address: z.string().min(1, "Address is required"),
+  address: z.string(),
   phone: z.string(),
   size: z.string()
     .transform(val => {
-      // Remove the explanatory text from column header if present
       const size = val.replace(/\s*\([^)]*\)/, '').trim();
       const matchedSize = validSizeValues.find(
         s => s.toLowerCase() === size.toLowerCase()
       );
-      if (!matchedSize) {
-        throw new Error(`Invalid size "${val}". Must be one of: ${validSizeValues.join(', ')}`);
-      }
-      return matchedSize as FacilitySize;
+      return (matchedSize || "Invalid") as FacilitySize;
     }),
   email: z.string().nullable().optional(),
   website: z.string().nullable().optional(),
   buying_price: z.string()
     .transform(val => {
       if (!val) return null;
+      // Extract numbers from string, including decimals and negative signs
       const number = parseFloat(val.replace(/[^\d.-]/g, ''));
-      if (isNaN(number)) {
-        throw new Error(`Invalid buying price "${val}". Must be a number.`);
-      }
-      return number;
+      return isNaN(number) ? null : number;
     })
     .pipe(z.number().nullable()),
   selling_price: z.string()
     .transform(val => {
       if (!val) return null;
+      // Extract numbers from string, including decimals and negative signs
       const number = parseFloat(val.replace(/[^\d.-]/g, ''));
-      if (isNaN(number)) {
-        throw new Error(`Invalid selling price "${val}". Must be a number.`);
-      }
-      return number;
+      return isNaN(number) ? null : number;
     })
     .pipe(z.number().nullable()),
   general_remarks: z.string().optional().nullable(),
