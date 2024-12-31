@@ -2,11 +2,11 @@ import { z } from "zod";
 import { VALID_STATUSES, VALID_SIZES } from "../constants";
 import type { Database } from "@/integrations/supabase/types";
 
-const validStatusValues = VALID_STATUSES.map(status => status.value);
-const validSizeValues = VALID_SIZES.map(size => size.value);
-
 type FacilityStatus = Database['public']['Enums']['facility_status'];
 type FacilitySize = Database['public']['Enums']['facility_size'];
+
+const validStatusValues = VALID_STATUSES.map(status => status.value);
+const validSizeValues = VALID_SIZES.map(size => size.value);
 
 export const facilityImportSchema = z.object({
   name: z.string(),
@@ -60,25 +60,9 @@ export const validateImportData = (data: any[]): {
   const validData: FacilityImportData[] = [];
   const errors: Record<number, string[]> = {};
 
-  // First, validate that we have the required columns
-  const requiredColumns = ['name', 'status', 'address', 'phone', 'size'];
-  const headers = Object.keys(data[0] || {}).map(h => h.toLowerCase().replace(/\s*\([^)]*\)/, '').trim());
-  const missingColumns = requiredColumns.filter(col => !headers.includes(col));
-
-  if (missingColumns.length > 0) {
-    errors[-1] = [`Missing required columns: ${missingColumns.join(', ')}`];
-    return { validData, errors };
-  }
-
   data.forEach((row, index) => {
     try {
-      // Clean up the row data by removing the explanatory text from column headers
-      const cleanRow = Object.entries(row).reduce((acc, [key, value]) => {
-        const cleanKey = key.replace(/\s*\([^)]*\)/, '').trim();
-        return { ...acc, [cleanKey]: value };
-      }, {});
-
-      const result = facilityImportSchema.safeParse(cleanRow);
+      const result = facilityImportSchema.safeParse(row);
       
       if (!result.success) {
         errors[index] = result.error.errors.map(err => 
