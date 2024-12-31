@@ -46,6 +46,7 @@ const statusColors: Record<Status, string> = {
   engaged: "bg-warning",
   past: "bg-danger",
   general: "bg-secondary",
+  invalid: "bg-gray-400",
 };
 
 export const FacilityCard = ({ facility, onDelete }: FacilityCardProps) => {
