@@ -10,18 +10,7 @@ import { FacilityPricing } from "./facility-card/FacilityPricing";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Trash2 } from "lucide-react";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { DeleteDialog } from "./facility-card/DeleteDialog";
 
 interface FacilityCardProps {
   facility: {
@@ -52,35 +41,6 @@ const statusColors: Record<Status, string> = {
 export const FacilityCard = ({ facility, onDelete }: FacilityCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { toast } = useToast();
-
-  const handleDelete = async () => {
-    try {
-      const { error } = await supabase
-        .from('facilities')
-        .delete()
-        .eq('id', facility.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Facility deleted",
-        description: `${facility.name} has been removed`,
-      });
-
-      if (onDelete) {
-        onDelete();
-      }
-    } catch (error) {
-      console.error('Error deleting facility:', error);
-      toast({
-        title: "Error deleting facility",
-        description: "Please try again later",
-        variant: "destructive",
-      });
-    }
-    setShowDeleteDialog(false);
-  };
 
   return (
     <>
@@ -146,22 +106,13 @@ export const FacilityCard = ({ facility, onDelete }: FacilityCardProps) => {
         </CardContent>
       </Card>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete {facility.name} and all associated data. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteDialog 
+        facilityName={facility.name}
+        facilityId={facility.id}
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onDelete={onDelete}
+      />
     </>
   );
 };
