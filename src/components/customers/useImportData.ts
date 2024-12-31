@@ -10,8 +10,8 @@ export const useImportData = () => {
   const { toast } = useToast();
 
   const cleanHeaderName = (header: string): string => {
-    // Remove the explanatory text in parentheses and convert to lowercase
-    return header.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
+    // Remove everything in parentheses and any surrounding whitespace
+    return header.replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
   };
 
   const processData = (text: string) => {
@@ -54,24 +54,28 @@ export const useImportData = () => {
         return;
       }
 
-      // Clean up headers by removing explanatory text and converting to lowercase
+      // Clean headers first
       const headers = rows[0].map(cleanHeaderName);
-      console.log('CSV headers:', headers);
+      console.log('Cleaned CSV headers:', headers);
       
+      // Map data using cleaned headers
       const data = rows.slice(1).map(row => {
         const obj: Record<string, any> = {};
         headers.forEach((header, i) => {
           // Remove any quotes from the value
-          const value = row[i]?.replace(/^"|"$/g, '') || null;
+          const value = row[i]?.replace(/^"|"$/g, '').trim() || null;
           obj[header] = value;
         });
         return obj;
       });
 
-      console.log('Processed data objects:', data);
+      console.log('Processed data objects before validation:', data);
       
       // Validate the data
       const { validData, errors: validationErrors } = validateImportData(data);
+      console.log('Validated data:', validData);
+      console.log('Validation errors:', validationErrors);
+      
       setPreview(validData);
       setErrors(validationErrors);
       

@@ -1,32 +1,30 @@
 import { z } from "zod";
 import { VALID_STATUSES, VALID_SIZES } from "../constants";
-import type { Database } from "@/integrations/supabase/types";
 
-type FacilityStatus = Database['public']['Enums']['facility_status'];
-type FacilitySize = Database['public']['Enums']['facility_size'];
-
-const validStatusValues = VALID_STATUSES.map(status => status.value);
-const validSizeValues = VALID_SIZES.map(size => size.value);
+const validStatusValues = VALID_STATUSES.map(status => status.value.toLowerCase());
+const validSizeValues = VALID_SIZES.map(size => size.value.toLowerCase());
 
 export const facilityImportSchema = z.object({
   name: z.string(),
   status: z.string()
     .transform(val => {
       const status = val.toLowerCase().trim();
-      const matchedStatus = validStatusValues.find(
-        s => s.toLowerCase() === status
-      );
-      return (matchedStatus || "Invalid") as FacilityStatus;
+      const matchedStatus = validStatusValues.find(s => s === status);
+      // Capitalize first letter to match enum
+      return matchedStatus ? 
+        (matchedStatus.charAt(0).toUpperCase() + matchedStatus.slice(1)) as any : 
+        "Invalid";
     }),
   address: z.string(),
   phone: z.string(),
   size: z.string()
     .transform(val => {
       const size = val.toLowerCase().trim();
-      const matchedSize = validSizeValues.find(
-        s => s.toLowerCase() === size
-      );
-      return (matchedSize || "Invalid") as FacilitySize;
+      const matchedSize = validSizeValues.find(s => s === size);
+      // Capitalize first letter to match enum
+      return matchedSize ? 
+        (matchedSize.charAt(0).toUpperCase() + matchedSize.slice(1)) as any : 
+        "Invalid";
     }),
   email: z.string().nullable().optional(),
   website: z.string().nullable().optional(),

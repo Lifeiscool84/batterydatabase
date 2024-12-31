@@ -12,15 +12,6 @@ interface ImportActionsProps {
 
 type FacilityInsert = Database['public']['Tables']['facilities']['Insert'];
 
-const parsePrice = (price: string | null): number | null => {
-  if (!price) return null;
-  // Try to extract numbers from the string
-  const matches = price.match(/-?\d+\.?\d*/);
-  if (!matches) return null;
-  const number = parseFloat(matches[0]);
-  return isNaN(number) ? null : number;
-};
-
 export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps) => {
   const { toast } = useToast();
 
@@ -29,24 +20,20 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
 
     try {
       // Transform the data to match the facilities table schema
-      const preparedData: FacilityInsert[] = data.map(facility => {
-        const transformed = {
-          name: facility.name,
-          status: facility.status,
-          address: facility.address,
-          phone: facility.phone,
-          size: facility.size,
-          email: facility.email || null,
-          website: facility.website || null,
-          buying_price: parsePrice(facility.buying_price),
-          selling_price: parsePrice(facility.selling_price),
-          general_remarks: facility.general_remarks || null,
-          internal_notes: facility.internal_notes || null,
-          location: facility.location || 'Houston'
-        };
-        console.log('Transformed facility data:', transformed);
-        return transformed;
-      });
+      const preparedData: FacilityInsert[] = data.map(facility => ({
+        name: facility.name,
+        status: facility.status,
+        address: facility.address,
+        phone: facility.phone,
+        size: facility.size,
+        email: facility.email || null,
+        website: facility.website || null,
+        buying_price: facility.buying_price || null,
+        selling_price: facility.selling_price || null,
+        general_remarks: facility.general_remarks || null,
+        internal_notes: facility.internal_notes || null,
+        location: facility.location || 'Houston'
+      }));
 
       console.log('Final data to be inserted:', preparedData);
 
