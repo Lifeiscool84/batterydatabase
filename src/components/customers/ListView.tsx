@@ -17,6 +17,7 @@ type GroupedFacilities = {
   engaged: Facility[];
   noResponse: Facility[];
   declined: Facility[];
+  invalid: Facility[];
 };
 
 export const ListView = ({ location, onLocationCountsChange }: ListViewProps) => {
@@ -37,9 +38,12 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
       case "Declined":
         acc.declined.push(facility);
         break;
+      case "Invalid":
+        acc.invalid.push(facility);
+        break;
     }
     return acc;
-  }, { active: [], engaged: [], noResponse: [], declined: [] } as GroupedFacilities);
+  }, { active: [], engaged: [], noResponse: [], declined: [], invalid: [] } as GroupedFacilities);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -78,6 +82,13 @@ export const ListView = ({ location, onLocationCountsChange }: ListViewProps) =>
           facilities={groupedFacilities.declined}
           title="Declined"
           titleColor="text-[#ea384c]"
+          onSave={handleCellChange}
+          onDelete={refetch}
+        />
+        <FacilityGroup 
+          facilities={groupedFacilities.invalid}
+          title="Invalid"
+          titleColor="text-gray-500"
           onSave={handleCellChange}
           onDelete={refetch}
         />
