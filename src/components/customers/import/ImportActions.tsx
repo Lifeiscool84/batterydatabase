@@ -12,6 +12,16 @@ interface ImportActionsProps {
 
 type FacilityInsert = Database['public']['Tables']['facilities']['Insert'];
 
+const parsePrice = (price: string | null | undefined): number | null => {
+  if (!price) return null;
+  
+  // Remove any non-numeric characters except decimal points
+  const numericValue = price.replace(/[^0-9.]/g, '');
+  const parsedValue = parseFloat(numericValue);
+  
+  return isNaN(parsedValue) ? null : parsedValue;
+};
+
 export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps) => {
   const { toast } = useToast();
 
@@ -28,8 +38,8 @@ export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps)
         size: facility.size,
         email: facility.email || null,
         website: facility.website || null,
-        buying_price: facility.buying_price || null,
-        selling_price: facility.selling_price || null,
+        buying_price: parsePrice(facility.buying_price),
+        selling_price: parsePrice(facility.selling_price),
         general_remarks: facility.general_remarks || null,
         internal_notes: facility.internal_notes || null,
         location: facility.location || 'Houston'
