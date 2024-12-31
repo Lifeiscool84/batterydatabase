@@ -33,19 +33,19 @@ export const facilityImportSchema = z.object({
   buying_price: z.string()
     .transform(val => {
       if (!val) return null;
-      // Extract numbers from string, including decimals and negative signs
+      // Try to extract a number, but if not possible, keep the original string
       const number = parseFloat(val.replace(/[^\d.-]/g, ''));
-      return isNaN(number) ? null : number;
+      return isNaN(number) ? val : number;
     })
-    .pipe(z.number().nullable()),
+    .nullable(),
   selling_price: z.string()
     .transform(val => {
       if (!val) return null;
-      // Extract numbers from string, including decimals and negative signs
+      // Try to extract a number, but if not possible, keep the original string
       const number = parseFloat(val.replace(/[^\d.-]/g, ''));
-      return isNaN(number) ? null : number;
+      return isNaN(number) ? val : number;
     })
-    .pipe(z.number().nullable()),
+    .nullable(),
   general_remarks: z.string().optional().nullable(),
   internal_notes: z.string().optional().nullable(),
   location: z.string().optional().default("Houston")
