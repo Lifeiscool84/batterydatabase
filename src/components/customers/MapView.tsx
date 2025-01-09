@@ -91,12 +91,15 @@ export const MapView = ({ location }: MapViewProps) => {
           return;
         }
 
-        // Create URL object for geocoding request
-        const geocodingUrl = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json`);
-        geocodingUrl.searchParams.append('access_token', mapboxgl.accessToken);
+        // Create geocoding URL
+        const params = new URLSearchParams({
+          access_token: mapboxgl.accessToken,
+        });
+        
+        const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json?${params.toString()}`;
 
         // Perform geocoding request
-        const response = await fetch(geocodingUrl.toString());
+        const response = await fetch(geocodingUrl);
         
         if (!response.ok) {
           throw new Error(`Geocoding failed: ${response.statusText}`);
@@ -105,7 +108,7 @@ export const MapView = ({ location }: MapViewProps) => {
         const data = await response.json();
 
         if (data.features && data.features.length > 0) {
-          const [lng, lat] = data.features[0].center;
+          const [lng, lat] = data.features[0].center as [number, number];
 
           // Create marker element
           const el = document.createElement('div');
