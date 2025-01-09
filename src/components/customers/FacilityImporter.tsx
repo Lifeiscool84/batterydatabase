@@ -13,6 +13,7 @@ export const FacilityImporter = ({ onSuccess }: FacilityImporterProps) => {
   const [data, setData] = useState<any>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<number, string[]>>({});
 
   return (
     <div className="space-y-6">
@@ -21,11 +22,11 @@ export const FacilityImporter = ({ onSuccess }: FacilityImporterProps) => {
         <TemplateDownloadButton />
       </div>
       
-      <FileUpload onDataLoad={setData} />
+      <FileUpload onDataProcessed={setData} />
       
       {data && (
         <>
-          <ImportPreview data={data} />
+          <ImportPreview data={data} errors={errors} />
           <ImportActions 
             data={data} 
             onSuccess={() => {
