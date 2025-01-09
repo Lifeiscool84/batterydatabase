@@ -91,10 +91,12 @@ export const MapView = ({ location }: MapViewProps) => {
           return;
         }
 
-        // Geocode address
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json?access_token=${mapboxgl.accessToken}`
-        );
+        // Create URL object for geocoding request
+        const geocodingUrl = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json`);
+        geocodingUrl.searchParams.append('access_token', mapboxgl.accessToken);
+
+        // Perform geocoding request
+        const response = await fetch(geocodingUrl.toString());
         
         if (!response.ok) {
           throw new Error(`Geocoding failed: ${response.statusText}`);
