@@ -4,10 +4,16 @@ import type { Location } from "@/pages/Customers";
 
 interface StatusViewProps {
   location: Location;
+  onUpdate?: () => void;
 }
 
-export const StatusView = ({ location }: StatusViewProps) => {
+export const StatusView = ({ location, onUpdate }: StatusViewProps) => {
   const { facilities, isLoading, refetch } = useFacilities(location);
+
+  const handleDelete = () => {
+    refetch();
+    onUpdate?.();
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -19,35 +25,35 @@ export const StatusView = ({ location }: StatusViewProps) => {
         title="Active Partners"
         titleColor="text-success"
         facilities={facilities.activePartners}
-        onDelete={refetch}
+        onDelete={handleDelete}
       />
 
       <FacilitySection
         title="Engaged Prospects"
         titleColor="text-[#0FA0CE]"
         facilities={facilities.engagedProspects}
-        onDelete={refetch}
+        onDelete={handleDelete}
       />
 
       <FacilitySection
         title="No Response"
         titleColor="text-black"
         facilities={facilities.noResponseContacts}
-        onDelete={refetch}
+        onDelete={handleDelete}
       />
 
       <FacilitySection
         title="Declined"
         titleColor="text-[#ea384c]"
         facilities={facilities.declinedContacts}
-        onDelete={refetch}
+        onDelete={handleDelete}
       />
 
       <FacilitySection
         title="Invalid"
         titleColor="text-gray-500"
         facilities={facilities.invalidContacts}
-        onDelete={refetch}
+        onDelete={handleDelete}
       />
     </div>
   );

@@ -1,46 +1,44 @@
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { ImportPreview } from "./import/ImportPreview";
-import { ImportActions } from "./import/ImportActions";
-import { FileUpload } from "./import/FileUpload";
-import { useImportData } from "./import/useImportData";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { FileUpload } from "./FileUpload";
+import { ImportPreview } from "./ImportPreview";
+import { ImportActions } from "./ImportActions";
+import { TemplateDownloadButton } from "./TemplateDownloadButton";
 
-export const FacilityImporter = () => {
-  const { rawData, preview, errors, processData, resetData } = useImportData();
+interface FacilityImporterProps {
+  onSuccess?: () => void;
+}
+
+export const FacilityImporter = ({ onSuccess }: FacilityImporterProps) => {
+  const [data, setData] = useState<any>(null);
   const { toast } = useToast();
-
-  const handleSuccess = () => {
-    resetData();
-    toast({
-      title: "Import completed",
-      description: `${preview.length} facilities have been successfully imported`,
-    });
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <Card className="w-full h-[600px] flex flex-col">
-      <CardHeader>
-        <DialogTitle>Import Facilities</DialogTitle>
-        <DialogDescription>
-          Upload an Excel file containing facility data. Download the template for the correct format.
-        </DialogDescription>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden">
-        <div className="h-full flex flex-col space-y-4">
-          <FileUpload onDataProcessed={processData} />
-          {preview.length > 0 && (
-            <ImportPreview data={preview} errors={errors} />
-          )}
-        </div>
-      </CardContent>
-      <CardFooter className="flex-shrink-0">
-        <ImportActions 
-          data={preview}
-          onSuccess={handleSuccess}
-          disabled={preview.length === 0}
-        />
-      </CardFooter>
-    </Card>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold">Import Facilities</h2>
+        <TemplateDownloadButton />
+      </div>
+      
+      <FileUpload onDataLoad={setData} />
+      
+      {data && (
+        <>
+          <ImportPreview data={data} />
+          <ImportActions 
+            data={data} 
+            onSuccess={() => {
+              toast({
+                title: "Import successful",
+                description: "All facilities have been imported successfully.",
+              });
+              onSuccess?.();
+            }}
+            disabled={isLoading} 
+          />
+        </>
+      )}
+    </div>
   );
 };

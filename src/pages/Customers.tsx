@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -9,6 +9,7 @@ import { MapView } from "@/components/customers/MapView";
 import { FacilityImporter } from "@/components/customers/FacilityImporter";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { BackButton } from "@/components/layout/BackButton";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Location = "Houston" | "New York/New Jersey" | "Seattle" | "Mobile" | "Los Angeles";
 export type Status = "active" | "engaged" | "past" | "general" | "invalid";
@@ -23,6 +24,39 @@ const Customers = () => {
     "Mobile": 0,
     "Los Angeles": 0
   });
+
+  const fetchLocationCounts = async () => {
+    try {
+      const { data: allFacilities, error: countError } = await supabase
+        .from('facilities')
+        .select('location');
+
+      if (countError) throw countError;
+
+      const counts: Record<Location, number> = {
+        "Houston": 0,
+        "New York/New Jersey": 0,
+        "Seattle": 0,
+        "Mobile": 0,
+        "Los Angeles": 0
+      };
+
+      allFacilities?.forEach(facility => {
+        const loc = facility.location as Location;
+        if (counts[loc] !== undefined) {
+          counts[loc]++;
+        }
+      });
+
+      setLocationCounts(counts);
+    } catch (error) {
+      console.error('Error fetching location counts:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLocationCounts();
+  }, []);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -39,7 +73,7 @@ const Customers = () => {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl">
-            <FacilityImporter />
+            <FacilityImporter onSuccess={fetchLocationCounts} />
           </DialogContent>
         </Dialog>
       </div>
@@ -57,7 +91,7 @@ const Customers = () => {
           <TabsTrigger value="map">Map View</TabsTrigger>
         </TabsList>
 
-        {view === "status" && <StatusView location={selectedLocation} />}
+        {view === "status" && <StatusView location={selectedLocation} onUpdate={fetchLocationCounts} />}
         {view === "list" && 
           <ListView 
             location={selectedLocation} 
