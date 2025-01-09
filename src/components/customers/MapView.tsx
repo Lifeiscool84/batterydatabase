@@ -49,7 +49,7 @@ export const MapView = ({ location }: MapViewProps) => {
     if (!mapContainer.current) return;
 
     // Initialize map
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
+    mapboxgl.accessToken = "pk.eyJ1IjoiZ2xlbm5zaGluIiwiYSI6ImNtNXB5MnhvaTA2amcyaXB5a3R4eXMxZzUifQ.q-ubkcVSOz0HJ9XoIMySLQ";
     
     if (!mapboxgl.accessToken) {
       console.error("Mapbox token is required");
