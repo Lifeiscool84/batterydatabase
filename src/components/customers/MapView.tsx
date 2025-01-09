@@ -57,18 +57,18 @@ export const MapView = ({ location }: MapViewProps) => {
     }
     
     // Set initial coordinates based on location
-    const initialCoordinates: [number, number] = {
+    const coordinates: Record<Location, [number, number]> = {
       "Houston": [-95.3698, 29.7604],
       "New York/New Jersey": [-74.0060, 40.7128],
       "Seattle": [-122.3321, 47.6062],
       "Mobile": [-88.0399, 30.6954],
       "Los Angeles": [-118.2437, 34.0522]
-    }[location];
+    };
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/light-v11",
-      center: initialCoordinates,
+      center: coordinates[location],
       zoom: 10
     });
 
