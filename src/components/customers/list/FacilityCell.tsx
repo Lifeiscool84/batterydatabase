@@ -1,6 +1,7 @@
 import { TableCell } from "@/components/ui/table";
 import { EditableCell } from "./EditableCell";
 import { cn } from "@/lib/utils";
+import { parsePrice } from "../import/utils/fileUtils";
 
 interface FacilityCellProps {
   value: any;
@@ -21,6 +22,16 @@ export const FacilityCell = ({
   options,
   className 
 }: FacilityCellProps) => {
+  const handleSave = (id: string, field: string, value: any) => {
+    // Parse price fields before saving
+    if (field === "buying_price" || field === "selling_price") {
+      const parsedPrice = parsePrice(value);
+      onSave(id, field, parsedPrice);
+    } else {
+      onSave(id, field, value);
+    }
+  };
+
   return (
     <TableCell className={cn(
       "p-4 align-top whitespace-normal break-words", 
@@ -38,7 +49,7 @@ export const FacilityCell = ({
           value={value}
           field={field}
           facilityId={facilityId}
-          onSave={onSave}
+          onSave={handleSave}
           type={type}
           options={options}
         />

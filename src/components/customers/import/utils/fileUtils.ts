@@ -1,31 +1,48 @@
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_EXTENSIONS = ['csv'];
+import * as XLSX from 'xlsx';
 
 export const processExcelFile = async (
   file: File,
   onDataProcessed: (data: string) => void,
-  setStatus: (status: string) => void
+  setUploadStatus: (status: string) => void
 ) => {
   try {
-    // Validate file extension
-    const fileExt = file.name.split('.').pop()?.toLowerCase();
-    if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
-      throw new Error('Invalid file type. Please upload a CSV file');
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+    if (jsonData.length < 2) {
+      throw new Error("File must contain at least one header row and one data row");
     }
 
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      throw new Error('File size exceeds 10MB limit');
-    }
+    // Convert to CSV
+    const csvString = jsonData
+      .map(row => 
+        (row as any[])
+          .map(cell => 
+            typeof cell === 'string' ? `"${cell.replace(/"/g, '""')}"` : cell
+          )
+          .join(',')
+      )
+      .join('\n');
 
-    // Read CSV file
-    const text = await file.text();
-    
-    setStatus(`Successfully processed file "${file.name}"`);
-    onDataProcessed(text);
-    
+    onDataProcessed(csvString);
+    setUploadStatus("File processed successfully");
   } catch (error) {
-    console.error('Error processing CSV file:', error);
-    throw error;
+    console.error('Error processing file:', error);
+    throw new Error(error instanceof Error ? error.message : "Error processing file");
   }
+};
+
+export const parsePrice = (price: string | null | undefined): number | null => {
+  if (!price) return null;
+  
+  // First remove currency symbols, units, and any other non-numeric characters
+  // except decimal points and negative signs
+  const numericValue = price
+    .replace(/[^0-9.-]/g, '') // Remove everything except numbers, dots, and minus signs
+    .replace(/\.(?=.*\.)/g, ''); // Keep only the last decimal point if multiple exist
+  
+  const parsedValue = parseFloat(numericValue);
+  return isNaN(parsedValue) ? null : parsedValue;
 };

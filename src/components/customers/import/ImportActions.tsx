@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { FacilityImportData } from "../validation/importValidation";
 import type { Database } from "@/integrations/supabase/types";
+import { parsePrice } from "./utils/fileUtils";
 
 interface ImportActionsProps {
   data: FacilityImportData[];
@@ -11,19 +12,6 @@ interface ImportActionsProps {
 }
 
 type FacilityInsert = Database['public']['Tables']['facilities']['Insert'];
-
-const parsePrice = (price: string | null | undefined): number | null => {
-  if (!price) return null;
-  
-  // First remove currency symbols, units, and any other non-numeric characters
-  // except decimal points and negative signs
-  const numericValue = price
-    .replace(/[^0-9.-]/g, '') // Remove everything except numbers, dots, and minus signs
-    .replace(/\.(?=.*\.)/g, ''); // Keep only the last decimal point if multiple exist
-  
-  const parsedValue = parseFloat(numericValue);
-  return isNaN(parsedValue) ? null : parsedValue;
-};
 
 export const ImportActions = ({ data, onSuccess, disabled }: ImportActionsProps) => {
   const { toast } = useToast();
