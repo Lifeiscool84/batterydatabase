@@ -1,38 +1,131 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Location } from "@/pages/Customers";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MapViewProps {
   location: Location;
 }
 
+interface Facility {
+  id: string;
+  name: string;
+  address: string;
+}
+
 export const MapView = ({ location }: MapViewProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const { toast } = useToast();
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+
+  useEffect(() => {
+    const fetchFacilities = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('facilities')
+          .select('id, name, address')
+          .eq('location', location);
+
+        if (error) throw error;
+        setFacilities(data || []);
+      } catch (error) {
+        console.error('Error fetching facilities:', error);
+        toast({
+          title: "Error fetching facilities",
+          description: "Could not load facility locations",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchFacilities();
+  }, [location]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
 
     // Initialize map
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || ""; // Use environment variable
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
     
     if (!mapboxgl.accessToken) {
       console.error("Mapbox token is required");
       return;
     }
     
+    // Set initial coordinates based on location
+    const initialCoordinates = {
+      "Houston": [-95.3698, 29.7604],
+      "New York/New Jersey": [-74.0060, 40.7128],
+      "Seattle": [-122.3321, 47.6062],
+      "Mobile": [-88.0399, 30.6954],
+      "Los Angeles": [-118.2437, 34.0522]
+    }[location];
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/light-v11",
-      center: [-95.3698, 29.7604], // Houston coordinates
+      center: initialCoordinates,
       zoom: 10
     });
 
     return () => {
+      // Clean up markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      // Remove map
       map.current?.remove();
     };
-  }, []);
+  }, [location]);
+
+  useEffect(() => {
+    if (!map.current || !facilities.length) return;
+
+    // Clean up existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Add markers for each facility
+    facilities.forEach(async (facility) => {
+      try {
+        // Geocode address
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json?access_token=${mapboxgl.accessToken}`
+        );
+        const data = await response.json();
+
+        if (data.features && data.features.length > 0) {
+          const [lng, lat] = data.features[0].center;
+
+          // Create marker element
+          const el = document.createElement('div');
+          el.className = 'w-6 h-6 bg-primary rounded-full border-2 border-white shadow-lg';
+
+          // Create popup
+          const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+              <div class="p-2">
+                <h3 class="font-semibold">${facility.name}</h3>
+                <p class="text-sm">${facility.address}</p>
+              </div>
+            `);
+
+          // Add marker to map
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([lng, lat])
+            .setPopup(popup)
+            .addTo(map.current!);
+
+          markersRef.current.push(marker);
+        }
+      } catch (error) {
+        console.error('Error geocoding address:', error);
+      }
+    });
+  }, [facilities, map.current]);
 
   return (
     <div className="h-[calc(100vh-300px)] rounded-lg overflow-hidden border">
