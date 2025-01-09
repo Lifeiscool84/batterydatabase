@@ -15,8 +15,8 @@ type FacilityInsert = Database['public']['Tables']['facilities']['Insert'];
 const parsePrice = (price: string | null | undefined): number | null => {
   if (!price) return null;
   
-  // Remove any non-numeric characters except decimal points
-  const numericValue = price.replace(/[^0-9.]/g, '');
+  // Remove any non-numeric characters except decimal points and negative signs
+  const numericValue = price.replace(/[^0-9.-]/g, '');
   const parsedValue = parseFloat(numericValue);
   
   return isNaN(parsedValue) ? null : parsedValue;
