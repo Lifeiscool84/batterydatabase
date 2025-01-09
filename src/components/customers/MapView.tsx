@@ -57,7 +57,7 @@ export const MapView = ({ location }: MapViewProps) => {
     }
     
     // Set initial coordinates based on location
-    const initialCoordinates = {
+    const initialCoordinates: [number, number] = {
       "Houston": [-95.3698, 29.7604],
       "New York/New Jersey": [-74.0060, 40.7128],
       "Seattle": [-122.3321, 47.6062],
@@ -115,7 +115,7 @@ export const MapView = ({ location }: MapViewProps) => {
 
           // Add marker to map
           const marker = new mapboxgl.Marker(el)
-            .setLngLat([lng, lat])
+            .setLngLat([lng, lat] as [number, number])
             .setPopup(popup)
             .addTo(map.current!);
 
