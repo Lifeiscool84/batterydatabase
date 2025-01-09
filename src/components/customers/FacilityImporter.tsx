@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { FileUpload } from "./FileUpload";
-import { ImportPreview } from "./ImportPreview";
-import { ImportActions } from "./ImportActions";
-import { TemplateDownloadButton } from "./TemplateDownloadButton";
+import { FileUpload } from "./import/FileUpload";
+import { ImportPreview } from "./import/ImportPreview";
+import { ImportActions } from "./import/ImportActions";
+import { TemplateDownloadButton } from "./import/components/TemplateDownloadButton";
 
 interface FacilityImporterProps {
   onSuccess?: () => void;
