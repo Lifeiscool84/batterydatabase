@@ -51,12 +51,6 @@ export const MapView = ({ location }: MapViewProps) => {
     // Initialize map
     mapboxgl.accessToken = "pk.eyJ1IjoiZ2xlbm5zaGluIiwiYSI6ImNtNXB5MnhvaTA2amcyaXB5a3R4eXMxZzUifQ.q-ubkcVSOz0HJ9XoIMySLQ";
     
-    if (!mapboxgl.accessToken) {
-      console.error("Mapbox token is required");
-      return;
-    }
-    
-    // Set initial coordinates based on location
     const coordinates: Record<Location, [number, number]> = {
       "Houston": [-95.3698, 29.7604],
       "New York/New Jersey": [-74.0060, 40.7128],
@@ -91,10 +85,21 @@ export const MapView = ({ location }: MapViewProps) => {
     // Add markers for each facility
     facilities.forEach(async (facility) => {
       try {
+        // Skip if address is empty
+        if (!facility.address.trim()) {
+          console.warn(`Empty address for facility: ${facility.name}`);
+          return;
+        }
+
         // Geocode address
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json?access_token=${mapboxgl.accessToken}`
         );
+        
+        if (!response.ok) {
+          throw new Error(`Geocoding failed: ${response.statusText}`);
+        }
+        
         const data = await response.json();
 
         if (data.features && data.features.length > 0) {
@@ -115,7 +120,7 @@ export const MapView = ({ location }: MapViewProps) => {
 
           // Add marker to map
           const marker = new mapboxgl.Marker(el)
-            .setLngLat([lng, lat] as [number, number])
+            .setLngLat([lng, lat])
             .setPopup(popup)
             .addTo(map.current!);
 
