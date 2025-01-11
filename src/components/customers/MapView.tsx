@@ -48,7 +48,6 @@ export const MapView = ({ location }: MapViewProps) => {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Initialize map
     mapboxgl.accessToken = "pk.eyJ1IjoiZ2xlbm5zaGluIiwiYSI6ImNtNXB5MnhvaTA2amcyaXB5a3R4eXMxZzUifQ.q-ubkcVSOz0HJ9XoIMySLQ";
     
     const coordinates: Record<Location, [number, number]> = {
@@ -93,7 +92,7 @@ export const MapView = ({ location }: MapViewProps) => {
           const encodedAddress = encodeURIComponent(facility.address.trim());
           const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxgl.accessToken}&limit=1`;
 
-          // Use XMLHttpRequest instead of fetch to avoid postMessage cloning issues
+          // Use Promise wrapper around XMLHttpRequest
           const coordinates = await new Promise<[number, number]>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open('GET', geocodingUrl);
