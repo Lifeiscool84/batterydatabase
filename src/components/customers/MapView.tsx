@@ -85,54 +85,60 @@ export const MapView = ({ location }: MapViewProps) => {
     // Add markers for each facility
     facilities.forEach(async (facility) => {
       try {
-        // Skip if address is empty
-        if (!facility.address.trim()) {
-          console.warn(`Empty address for facility: ${facility.name}`);
+        // Skip if address is empty or just whitespace
+        if (!facility.address?.trim()) {
+          console.warn(`Skipping geocoding for facility "${facility.name}": Empty or invalid address`);
           return;
         }
 
-        // Create geocoding URL
+        // Create geocoding URL with proper encoding
+        const encodedAddress = encodeURIComponent(facility.address.trim());
         const params = new URLSearchParams({
           access_token: mapboxgl.accessToken,
+          limit: '1'
         });
         
-        const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json?${params.toString()}`;
+        const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?${params}`;
 
         // Perform geocoding request
         const response = await fetch(geocodingUrl);
         
         if (!response.ok) {
-          throw new Error(`Geocoding failed: ${response.statusText}`);
+          console.warn(`Geocoding failed for facility "${facility.name}": ${response.statusText}`);
+          return;
         }
         
         const data = await response.json();
 
-        if (data.features && data.features.length > 0) {
-          const [lng, lat] = data.features[0].center as [number, number];
-
-          // Create marker element
-          const el = document.createElement('div');
-          el.className = 'w-6 h-6 bg-primary rounded-full border-2 border-white shadow-lg';
-
-          // Create popup
-          const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div class="p-2">
-                <h3 class="font-semibold">${facility.name}</h3>
-                <p class="text-sm">${facility.address}</p>
-              </div>
-            `);
-
-          // Add marker to map
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([lng, lat])
-            .setPopup(popup)
-            .addTo(map.current!);
-
-          markersRef.current.push(marker);
+        if (!data.features?.length) {
+          console.warn(`No geocoding results found for facility "${facility.name}"`);
+          return;
         }
+
+        const [lng, lat] = data.features[0].center;
+
+        // Create marker element
+        const el = document.createElement('div');
+        el.className = 'w-6 h-6 bg-primary rounded-full border-2 border-white shadow-lg';
+
+        // Create popup
+        const popup = new mapboxgl.Popup({ offset: 25 })
+          .setHTML(`
+            <div class="p-2">
+              <h3 class="font-semibold">${facility.name}</h3>
+              <p class="text-sm">${facility.address}</p>
+            </div>
+          `);
+
+        // Add marker to map
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
       } catch (error) {
-        console.error('Error geocoding address:', error);
+        console.error(`Error processing facility "${facility.name}":`, error);
       }
     });
   }, [facilities, map.current]);
