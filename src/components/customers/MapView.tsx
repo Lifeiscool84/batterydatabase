@@ -73,6 +73,30 @@ export const MapView = ({ location }: MapViewProps) => {
   }, [location]);
 
   useEffect(() => {
+    const geocodeAddress = (address: string): Promise<[number, number]> => {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const encodedAddress = encodeURIComponent(address.trim());
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxgl.accessToken}&limit=1`;
+        
+        xhr.open('GET', url);
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.features?.length) {
+              resolve(response.features[0].center);
+            } else {
+              reject(new Error('No results found'));
+            }
+          } else {
+            reject(new Error(`Geocoding failed: ${xhr.statusText}`));
+          }
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.send();
+      });
+    };
+
     const addMarkersToMap = async () => {
       if (!map.current || !facilities.length) return;
 
@@ -88,29 +112,7 @@ export const MapView = ({ location }: MapViewProps) => {
             continue;
           }
 
-          // Create geocoding URL with proper encoding
-          const encodedAddress = encodeURIComponent(facility.address.trim());
-          const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxgl.accessToken}&limit=1`;
-
-          // Use Promise wrapper around XMLHttpRequest
-          const coordinates = await new Promise<[number, number]>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', geocodingUrl);
-            xhr.onload = () => {
-              if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.features?.length) {
-                  resolve(response.features[0].center);
-                } else {
-                  reject(new Error('No results found'));
-                }
-              } else {
-                reject(new Error(`Geocoding failed: ${xhr.statusText}`));
-              }
-            };
-            xhr.onerror = () => reject(new Error('Network error'));
-            xhr.send();
-          });
+          const coordinates = await geocodeAddress(facility.address);
 
           // Create marker element
           const el = document.createElement('div');
