@@ -3,8 +3,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import type { Location } from "@/pages/Customers";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useMapInitialization } from "./map-view/hooks/useMapInitialization";
-import { useMarkers } from "./map-view/hooks/useMarkers";
+import { MapContainer } from "./map-view/MapContainer";
 
 interface MapViewProps {
   location: Location;
@@ -19,8 +18,6 @@ interface MapFacility {
 export const MapView = ({ location }: MapViewProps) => {
   const [facilities, setFacilities] = useState<MapFacility[]>([]);
   const { toast } = useToast();
-  const { mapContainer, map } = useMapInitialization(location);
-  const markersRef = useMarkers(map, facilities);
 
   useEffect(() => {
     const fetchFacilities = async () => {
@@ -47,7 +44,7 @@ export const MapView = ({ location }: MapViewProps) => {
 
   return (
     <div className="h-[calc(100vh-300px)] rounded-lg overflow-hidden border">
-      <div ref={mapContainer} className="w-full h-full" />
+      <MapContainer facilities={facilities} location={location} />
     </div>
   );
 };
