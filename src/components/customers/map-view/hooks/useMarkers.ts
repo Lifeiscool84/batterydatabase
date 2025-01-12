@@ -1,9 +1,14 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import { geocodeAddress } from "../utils/geocoding";
-import type { Facility } from "@/components/customers/types/database";
 
-export const useMarkers = (map: React.RefObject<mapboxgl.Map | null>, facilities: Facility[]) => {
+interface MapFacility {
+  id: string;
+  name: string;
+  address: string;
+}
+
+export const useMarkers = (map: React.RefObject<mapboxgl.Map | null>, facilities: MapFacility[]) => {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
 
   useEffect(() => {

@@ -11,8 +11,14 @@ interface MapViewProps {
   location: Location;
 }
 
+interface MapFacility {
+  id: string;
+  name: string;
+  address: string;
+}
+
 export const MapView = ({ location }: MapViewProps) => {
-  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [facilities, setFacilities] = useState<MapFacility[]>([]);
   const { toast } = useToast();
   const { mapContainer, map } = useMapInitialization(location);
   const markersRef = useMarkers(map, facilities);
