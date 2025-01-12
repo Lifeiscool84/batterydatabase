@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useMapInitialization } from "./map-view/hooks/useMapInitialization";
 import { useMarkers } from "./map-view/hooks/useMarkers";
-import type { Facility } from "./types/database";
 
 interface MapViewProps {
   location: Location;
