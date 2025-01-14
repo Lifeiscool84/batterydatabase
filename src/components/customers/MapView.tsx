@@ -13,6 +13,7 @@ interface MapFacility {
   id: string;
   name: string;
   address: string;
+  location: Location;
 }
 
 export const MapView = ({ location }: MapViewProps) => {
@@ -24,7 +25,7 @@ export const MapView = ({ location }: MapViewProps) => {
       try {
         const { data, error } = await supabase
           .from('facilities')
-          .select('id, name, address')
+          .select('id, name, address, location')
           .eq('location', location);
 
         if (error) throw error;
