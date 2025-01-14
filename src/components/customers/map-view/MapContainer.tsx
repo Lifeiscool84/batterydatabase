@@ -10,14 +10,16 @@ interface MapFacility {
   id: string;
   name: string;
   address: string;
-}
-
-interface MapContainerProps {
-  facilities: MapFacility[];
   location: Location;
 }
 
-export const MapContainer = ({ facilities, location }: MapContainerProps) => {
+interface MapContainerProps {
+  location: Location;
+  facilities: MapFacility[];
+  onFacilityClick?: (facilityId: string) => void;
+}
+
+export const MapContainer = ({ location, facilities, onFacilityClick }: MapContainerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
@@ -31,9 +33,13 @@ export const MapContainer = ({ facilities, location }: MapContainerProps) => {
 
       try {
         // Get Mapbox token from edge function
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token', {
+          method: 'POST',
+          body: JSON.stringify({})
+        });
+        
         if (error) throw error;
-        if (!data.token) throw new Error('No token received');
+        if (!data?.token) throw new Error('No token received');
 
         mapboxgl.accessToken = data.token;
         const coordinates = getLocationCoordinates(location);
@@ -74,49 +80,41 @@ export const MapContainer = ({ facilities, location }: MapContainerProps) => {
 
     // Add new markers
     facilities.forEach(facility => {
-      if (!facility.address?.trim()) {
-        console.warn(`Skipping marker for facility "${facility.name}": Empty address`);
-        return;
+      const coordinates = getLocationCoordinates(facility.location);
+      
+      // Create marker element
+      const el = createMarkerElement();
+      
+      // Create popup
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+        <div class="p-2">
+          <h3 class="font-semibold">${facility.name}</h3>
+          <p class="text-sm text-gray-600">${facility.address}</p>
+        </div>
+      `);
+
+      // Create and add marker
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat(coordinates)
+        .setPopup(popup)
+        .addTo(map.current!);
+
+      // Add click handler
+      if (onFacilityClick) {
+        el.addEventListener('click', () => {
+          onFacilityClick(facility.id);
+        });
       }
 
-      const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(facility.address)}.json?access_token=${mapboxgl.accessToken}`;
-      
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', geocodeUrl);
-      
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
-          if (response.features?.length) {
-            const [lng, lat] = response.features[0].center;
-            
-            const markerElement = createMarkerElement();
-            const popup = new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div class="p-2">
-                  <h3 class="font-semibold">${facility.name}</h3>
-                  <p class="text-sm">${facility.address}</p>
-                </div>
-              `);
-
-            const marker = new mapboxgl.Marker(markerElement)
-              .setLngLat([lng, lat])
-              .setPopup(popup)
-              .addTo(map.current!);
-
-            markers.current.push(marker);
-          }
-        }
-      };
-      
-      xhr.send();
+      markers.current.push(marker);
     });
 
+    // Cleanup function
     return () => {
       markers.current.forEach(marker => marker.remove());
       markers.current = [];
     };
-  }, [facilities, map.current, isLoading]);
+  }, [facilities, map.current, isLoading, onFacilityClick]);
 
   if (isLoading) {
     return <div className="w-full h-full flex items-center justify-center">Loading map...</div>;
