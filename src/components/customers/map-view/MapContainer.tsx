@@ -1,8 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import type { Location } from "@/pages/Customers";
 import { getLocationCoordinates } from "./utils/coordinates";
 import { createMarkerElement } from "./utils/markers";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MapFacility {
   id: string;
@@ -19,21 +21,43 @@ export const MapContainer = ({ facilities, location }: MapContainerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current) return;
+    const initializeMap = async () => {
+      if (!mapContainer.current) return;
 
-    const coordinates = getLocationCoordinates(location);
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: coordinates,
-      zoom: 9
-    });
+      try {
+        // Get Mapbox token from edge function
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        if (error) throw error;
+        if (!data.token) throw new Error('No token received');
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        mapboxgl.accessToken = data.token;
+        const coordinates = getLocationCoordinates(location);
+        
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/light-v11',
+          center: coordinates,
+          zoom: 9
+        });
+
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        toast({
+          title: "Error initializing map",
+          description: "Could not load the map. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initializeMap();
 
     return () => {
       map.current?.remove();
@@ -42,7 +66,7 @@ export const MapContainer = ({ facilities, location }: MapContainerProps) => {
 
   // Handle markers
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || isLoading) return;
 
     // Clear existing markers
     markers.current.forEach(marker => marker.remove());
@@ -92,7 +116,11 @@ export const MapContainer = ({ facilities, location }: MapContainerProps) => {
       markers.current.forEach(marker => marker.remove());
       markers.current = [];
     };
-  }, [facilities, map.current]);
+  }, [facilities, map.current, isLoading]);
+
+  if (isLoading) {
+    return <div className="w-full h-full flex items-center justify-center">Loading map...</div>;
+  }
 
   return <div ref={mapContainer} className="w-full h-full" />;
 };
