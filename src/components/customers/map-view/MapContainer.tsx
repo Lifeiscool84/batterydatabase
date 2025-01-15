@@ -33,15 +33,12 @@ export const MapContainer = ({ location, facilities, onFacilityClick }: MapConta
 
       try {
         // Get Mapbox token from edge function
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token', {
-          method: 'POST',
-          body: JSON.stringify({})
-        });
+        const { data: { token } = {}, error } = await supabase.functions.invoke('get-mapbox-token');
         
         if (error) throw error;
-        if (!data?.token) throw new Error('No token received');
+        if (!token) throw new Error('No token received');
 
-        mapboxgl.accessToken = data.token;
+        mapboxgl.accessToken = token;
         const coordinates = getLocationCoordinates(location);
         
         map.current = new mapboxgl.Map({

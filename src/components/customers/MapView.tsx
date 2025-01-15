@@ -29,7 +29,14 @@ export const MapView = ({ location }: MapViewProps) => {
           .eq('location', location);
 
         if (error) throw error;
-        setFacilities(data || []);
+        
+        // Convert the data to ensure location is of type Location
+        const typedFacilities: MapFacility[] = (data || []).map(facility => ({
+          ...facility,
+          location: facility.location as Location // Safe to cast since we know the data structure
+        }));
+        
+        setFacilities(typedFacilities);
       } catch (error) {
         console.error('Error fetching facilities:', error);
         toast({
